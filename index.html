@@ -109,6 +109,13 @@ ul.tasks input{margin:3px 0 0;width:16px;height:16px;accent-color:var(--accent)}
 .chip{font-family:var(--f-mono);font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--c);background:color-mix(in srgb, var(--c) 13%, transparent);border-radius:4px;padding:3px 6px;text-align:center;align-self:start;margin-top:1px}
 ul.tasks .txt{min-width:0}
 ul.tasks input:checked ~ .txt{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line)}
+.wextra{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px 22px;border-top:1px dashed var(--line);padding-top:14px}
+.xcol{min-width:0}
+.xcol h4{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:600}
+.xcol ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px;font-size:14px}
+.xcol.res ul{list-style:none;padding:0;gap:9px}
+.xcol.res li span{display:block;font-size:12.5px;color:var(--muted)}
+.xcol code{font-family:var(--f-mono);font-size:12.5px;background:var(--sunk);padding:1px 5px;border-radius:4px}
 
 /* neetcode */
 .nc-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:18px;align-items:start}
@@ -163,6 +170,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   ul.tasks .txt{grid-column:2}
   details.week>summary{grid-template-columns:auto 1fr;}
   .wcount{grid-column:1 / -1;flex-direction:row;align-items:center;justify-content:flex-start}
+  .wextra{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:reduce){ .bar>i{transition:none} }
 </style>
@@ -475,6 +483,176 @@ const WEEKS = [
   ["car","Negotiation prep: know your number, line up interviews so offers arrive together, practice the salary conversation"]
  ]}
 ];
+/* Per-week key points (what to be able to say in an interview) and extra resources. Index = week - 1.
+   Key points may use `backticks` for inline code. */
+const WEEK_EXTRAS = [
+ {keys:[
+  "A hash map trades O(n) space for O(1) lookup. Try it first for any find-a-pair, duplicate or frequency-count problem.",
+  "Two pointers needs sorted input or some monotonic property. Remember that sorting first adds O(n log n).",
+  "Sliding window: grow the right edge, then shrink the left edge while the window is invalid. A variable-size window fits longest or shortest subarray problems.",
+  "Negative numbers break sliding window. For subarray-sum-equals-k problems, use prefix sums with a hash map instead.",
+  "`this` is decided at call time, by four rules: default, implicit, explicit (call/apply/bind) and new. Arrow functions take `this` from the enclosing scope.",
+  "Classic closure question: `var` in a loop with setTimeout prints the final value every time. `let` creates a new binding on each iteration."
+ ], res:[
+  ["NeetCode roadmap","https://neetcode.io/roadmap","Shows how the categories depend on each other"],
+  ["MDN: Closures","https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures","The clearest reference on closures"],
+  ["MDN: this","https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this","Every binding rule, with examples"],
+  ["MDN: Prototype chain","https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain","How class syntax maps onto prototypes"],
+  ["You Don't Know JS Yet","https://github.com/getify/You-Dont-Know-JS","Free book, read the Scope & Closures volume"]
+ ]},
+ {keys:[
+  "A monotonic stack solves next-greater and next-smaller element problems in O(n).",
+  "Binary search on the answer works whenever is-X-feasible is monotonic, as in Koko Eating Bananas or ship capacity problems.",
+  "Write `mid = lo + Math.floor((hi - lo) / 2)` and choose `lo <= hi` or `lo < hi` on purpose. Know which invariant your loop keeps.",
+  "In linked lists, a dummy head node removes most edge cases. Use fast and slow pointers to find the middle or detect a cycle (Floyd's algorithm).",
+  "All microtasks (promise callbacks, queueMicrotask) run before the next macrotask. A microtask that keeps scheduling more can starve I/O.",
+  "Promise.all rejects on the first rejection. allSettled never rejects. any resolves on the first fulfilment. race settles with whichever settles first."
+ ], res:[
+  ["Jake Archibald: Tasks, microtasks, queues","https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/","The best walkthrough of execution order"],
+  ["What the heck is the event loop anyway?","https://www.youtube.com/watch?v=8aGhZQkoFbQ","Philip Roberts, JSConf talk, 26 min"],
+  ["MDN: Using promises","https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises","Chaining, error handling, composition"],
+  ["MDN: Promise reference","https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise","Static methods compared"]
+ ]},
+ {keys:[
+  "For each tree problem, decide what a recursive call returns to its parent and what it records in a global answer (diameter, max path sum).",
+  "An in-order traversal of a BST is sorted. Validate a BST by passing (min, max) bounds down, not by comparing each node with its parent.",
+  "Level-order traversal uses BFS with a queue. In JS, `shift()` is O(n), so walk the queue with a head index instead.",
+  "A trie node is `{ children: Map, end: boolean }`. Insert and search both take O(word length).",
+  "Node's event loop phases: timers → pending callbacks → poll → check (setImmediate) → close. `process.nextTick` runs before promise microtasks.",
+  "The libuv thread pool has 4 threads by default. A fifth concurrent `crypto.pbkdf2` call waits for one to free up, a common interview demo."
+ ], res:[
+  ["Node.js: Don't block the event loop","https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop","Thread pool, ReDoS, JSON blocking"],
+  ["libuv design overview","https://docs.libuv.org/en/v1.x/design.html","Diagram of the loop and its I/O"],
+  ["VisuAlgo: BST","https://visualgo.net/en/bst","Animated tree operations"]
+ ]},
+ {keys:[
+  "For top-K, keep a min-heap of size K, for O(n log k). For a running median, use two heaps.",
+  "Backtracking template: choose, recurse, undo the choice. Prune early, and sort the input so you can skip duplicates.",
+  "Intervals: sort by start, then merge while next.start <= current.end. For meeting rooms, use a min-heap of end times or a sweep line.",
+  "Backpressure: when `write()` returns false, stop writing until `'drain'` fires. `stream.pipeline()` handles errors and cleanup for you.",
+  "Use worker_threads for CPU-heavy JS, multiple processes (cluster, PM2, K8s replicas) to use more cores, and child_process to run other programs.",
+  "Workers communicate by message passing (structured clone) or SharedArrayBuffer. Workers are expensive to start, so use a pool."
+ ], res:[
+  ["Node.js: Backpressuring in streams","https://nodejs.org/en/learn/modules/backpressuring-in-streams","Official guide, with diagrams"],
+  ["Node.js API: Stream","https://nodejs.org/api/stream.html","Reference for readable, writable and transform streams"],
+  ["Node.js API: worker_threads","https://nodejs.org/api/worker_threads.html","Worker, MessageChannel, resourceLimits"],
+  ["Node.js API: cluster","https://nodejs.org/api/cluster.html","Primary and worker model, load balancing"]
+ ]},
+ {keys:[
+  "A grid is a graph. Use BFS for shortest paths when edges are unweighted, Dijkstra when weights are non-negative, and Bellman-Ford for negative weights or a K-stop limit.",
+  "Topological sort with Kahn's algorithm also detects cycles: if not every node gets processed, there is a cycle (Course Schedule).",
+  "Union-Find with path compression and union by rank is close to O(1) per operation. Use it for connected components and redundant edges.",
+  "V8 splits the heap: new space is collected by scavenge (most objects die young), old space by mark-sweep-compact. An object that survives two scavenges is promoted.",
+  "To find a leak, take 3 heap snapshots under load and compare them. Check the retainers of whatever keeps growing.",
+  "AsyncLocalStorage carries request context (requestId, userId) across awaits, so you don't have to pass it through every function."
+ ], res:[
+  ["Node.js: Memory diagnostics","https://nodejs.org/en/learn/diagnostics/memory","Heap snapshots, heap profiler, GC traces"],
+  ["V8 blog: Trash talk","https://v8.dev/blog/trash-talk","How Orinoco's garbage collector works"],
+  ["Node.js API: AsyncLocalStorage","https://nodejs.org/api/async_context.html","The recommended API for request context"],
+  ["CP-Algorithms: Disjoint Set Union","https://cp-algorithms.com/data_structures/disjoint_set_union.html","DSU explained, with proofs"]
+ ]},
+ {keys:[
+  "DP in four steps: describe the state in words, write the recurrence, set the base cases, choose the order. Then cut space (House Robber needs only 2 variables).",
+  "Top-down with memoization is a valid answer. Convert to bottom-up if the interviewer asks.",
+  "HLD order: requirements, functional and non-functional (about 5 min) → core entities → API → high-level design → deep dives. Don't start drawing boxes first.",
+  "Quick estimates: a day is about 10^5 seconds, so 1M requests/day is about 12 RPS on average. Plan for peak at 2–3× average.",
+  "Consistent hashing moves only about K/N keys when a node is added or removed. Virtual nodes even out the load.",
+  "A composite index (a, b) serves `WHERE a = ?` and `WHERE a = ? AND b = ?`, but not `WHERE b = ?` alone. That's the leftmost-prefix rule."
+ ], res:[
+  ["System Design Primer","https://github.com/donnemartin/system-design-primer","Free reference for every core concept"],
+  ["Latency numbers every programmer should know","https://gist.github.com/jboner/2841832","Memorize these orders of magnitude"],
+  ["PostgreSQL: Indexes","https://www.postgresql.org/docs/current/indexes.html","Index types, multicolumn, partial, index-only scans"],
+  ["PostgreSQL: Using EXPLAIN","https://www.postgresql.org/docs/current/using-explain.html","How to read query plans"]
+ ]},
+ {keys:[
+  "For 2-D DP problems (grid paths, LCS, edit distance), fill in the table for a small example on paper before you code.",
+  "Kafka keeps order only within a partition, so choose a partition key (orderId, userId) for the things that must stay in order.",
+  "Delivery is usually at-least-once, so consumers must be idempotent: dedupe on message ID, or use upserts.",
+  "Chat design: WebSocket gateways, a session registry that maps users to servers, a message store, and push notifications for offline users.",
+  "Feed design: fan-out on write for normal users and fan-out on read for celebrities. Interviewers expect the hybrid.",
+  "Postgres defaults to Read Committed. Its Repeatable Read is snapshot isolation (no phantoms, but write skew is possible). Serializable (SSI) prevents write skew."
+ ], res:[
+  ["Kafka: Introduction","https://kafka.apache.org/intro","Topics, partitions, consumer groups"],
+  ["PostgreSQL: Explicit locking","https://www.postgresql.org/docs/current/explicit-locking.html","Row locks, FOR UPDATE, deadlocks"],
+  ["Hermitage (Kleppmann)","https://github.com/ept/hermitage","Which anomalies each database's isolation level allows"],
+  ["Stripe: Scaling your API with rate limiters","https://stripe.com/blog/rate-limiters","How rate limiting works at Stripe"]
+ ]},
+ {keys:[
+  "To justify a greedy choice, use an exchange argument or a known pattern (Jump Game, Gas Station). When unsure, fall back to DP.",
+  "Bit tricks: `x & (x - 1)` clears the lowest set bit, and XOR cancels pairs. JS bitwise operations work on 32-bit signed ints, so use `>>> 0` for unsigned.",
+  "Ticketmaster: hold a seat with a TTL (Redis or a status column with an expiry), take payment, then confirm. Hot events need a virtual waiting room.",
+  "Uber: a geospatial index (geohash, quadtree, H3 or Redis GEO), location pings every few seconds, and a per-driver lock during matching.",
+  "Dropbox: split files into chunks and hash them to dedupe. Upload straight to blob storage with presigned URLs, and keep metadata in a separate DB.",
+  "MongoDB compound index order follows ESR: Equality fields, then Sort fields, then Range fields."
+ ], res:[
+  ["MongoDB: Indexes","https://www.mongodb.com/docs/manual/indexes/","Compound, multikey and partial indexes, plus the ESR guideline"],
+  ["MongoDB: Data modeling","https://www.mongodb.com/docs/manual/data-modeling/","When to embed and when to reference"],
+  ["H3 geospatial index","https://h3geo.org/","Uber's hexagonal grid, useful for location problems"],
+  ["Bit Twiddling Hacks","https://graphics.stanford.edu/~seander/bithacks.html","Classic collection of bit tricks"]
+ ]},
+ {keys:[
+  "LLD order: clarify requirements → list entities → map relationships → class diagram → interfaces → code the core flow → show how it extends.",
+  "Prefer composition over inheritance, and depend on interfaces (TypeScript `interface`) rather than concrete classes.",
+  "Strategy fits swappable algorithms (pricing, spot allocation). State fits elevators and vending machines. Observer fits notifications.",
+  "In Node, the module cache already makes a module-level instance a singleton. Mention the testability trade-off.",
+  "Cache-aside: read the cache; on a miss, read the DB and set the cache with a TTL. On writes, delete the cache entry rather than updating it.",
+  "Cache stampede fixes: jittered TTLs, single-flight request coalescing, early refresh. For a lock, use `SET key val NX PX ttl` and release it with a Lua compare-and-delete."
+ ], res:[
+  ["Refactoring Guru: Pattern catalog","https://refactoring.guru/design-patterns/catalog","Every pattern, with TypeScript examples"],
+  ["awesome-low-level-design","https://github.com/ashishps1/awesome-low-level-design","Collection of LLD problems with solutions"],
+  ["TypeScript handbook: Classes","https://www.typescriptlang.org/docs/handbook/2/classes.html","Abstract classes, access modifiers, implements"],
+  ["Kleppmann: How to do distributed locking","https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html","Where Redlock falls short and why fencing tokens matter"]
+ ]},
+ {keys:[
+  "BookMyShow: prevent double booking with optimistic locking (a version column) or `SELECT … FOR UPDATE`, plus seat holds that expire.",
+  "Splitwise simplify-debts: compute each person's net balance, then repeatedly settle the largest creditor against the largest debtor.",
+  "LRU in JS: `Map` keeps insertion order, so refresh a key with delete then set, and evict `map.keys().next().value`. Also know the hash map + doubly linked list version.",
+  "In machine coding, working code beats a perfect diagram. Get the main flow running in the first 60% of the time, then add extensibility.",
+  "Kafka is a durable, replayable log that consumers pull from. RabbitMQ is a broker that pushes to consumers, routes through exchanges, and deletes messages once acknowledged.",
+  "Behavioral: make each Result measurable, and say I, not we, when describing your own part."
+ ], res:[
+  ["LeetCode: LRU Cache","https://leetcode.com/problems/lru-cache/","Practice it until you can write it in 15 minutes"],
+  ["RabbitMQ tutorials","https://www.rabbitmq.com/tutorials","Work queues, pub/sub, routing, topics"],
+  ["Kafka docs: Design","https://kafka.apache.org/documentation/#design","Persistence, delivery semantics, replication"]
+ ]},
+ {keys:[
+  "After each mock, write down 3 things to fix and work on them before the next one.",
+  "Rate limiters: token bucket allows bursts up to the bucket size. Sliding window log is exact but uses more memory. Sliding window counter is the common compromise. Use Redis + Lua so updates are atomic.",
+  "Idempotency key: the client sends a unique key, and the server stores key → response with a TTL. A repeated request gets the stored response. Essential for payments.",
+  "Retry only transient failures (timeouts, 503, 429), using exponential backoff with jitter and a capped number of attempts. The endpoint must be idempotent.",
+  "A circuit breaker moves from closed to open (fail fast), then to half-open, where it lets a few trial requests through before closing again.",
+  "A saga is a chain of local transactions, each with a compensating action. The outbox pattern writes the event to an outbox table in the same DB transaction, and a relay publishes it."
+ ], res:[
+  ["AWS: Timeouts, retries and backoff with jitter","https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/","How Amazon handles retries in practice"],
+  ["Stripe: Idempotency","https://stripe.com/blog/idempotency","Designing robust APIs with idempotency keys"],
+  ["Martin Fowler: Circuit Breaker","https://martinfowler.com/bliki/CircuitBreaker.html","The original description of the pattern"],
+  ["microservices.io: Saga","https://microservices.io/patterns/data/saga.html","Choreography vs orchestration"],
+  ["microservices.io: Transactional outbox","https://microservices.io/patterns/data/transactional-outbox.html","Publish events reliably alongside a DB write"]
+ ]},
+ {keys:[
+  "Cursor pagination (`WHERE id > :cursor LIMIT n`) stays fast and stable as rows are added. Offset pagination slows down the deeper you page.",
+  "API versioning: URL versioning (/v1) is the simplest to explain. Never break existing clients.",
+  "JWTs are stateless but hard to revoke, so use short-lived access tokens with refresh tokens. For user login, use the OAuth2 authorization code flow with PKCE.",
+  "Fix N+1 queries by batching (DataLoader), with a JOIN, or with $lookup in MongoDB.",
+  "The day before an interview, don't start new problems. Revise your mistake log and story bank, and get a full night's sleep.",
+  "Negotiation: avoid naming a number first, talk in terms of total compensation, and use competing offers as leverage."
+ ], res:[
+  ["Microsoft REST API Guidelines","https://github.com/microsoft/api-guidelines","Naming, errors, pagination, versioning"],
+  ["OAuth 2.0 Simplified","https://www.oauth.com/","Flows explained in plain language"],
+  ["JWT introduction","https://jwt.io/introduction","Structure, signing, and when to use JWTs"],
+  ["Levels.fyi","https://www.levels.fyi/","Compensation data to prepare your negotiation"]
+ ]}
+];
+
+function richText(s){
+  const frag = document.createDocumentFragment();
+  s.split("`").forEach((part, i) => {
+    if(!part) return;
+    frag.appendChild(i % 2 ? el("code",{text:part}) : document.createTextNode(part));
+  });
+  return frag;
+}
+
 const NC = [
   ["Arrays & Hashing",9,1],["Two Pointers",5,1],["Sliding Window",6,1],
   ["Stack",7,2],["Binary Search",7,2],["Linked List",11,2],
@@ -637,6 +815,20 @@ function renderWeeks(){
       ul.appendChild(el("li",{},[el("label",{"for":"cb-"+id},[cb, el("span",{cls:"chip", style:"--c:"+TRACKS[tr].c, text:TRACKS[tr].name}), el("span",{cls:"txt", text:txt})])]));
     });
     body.appendChild(ul);
+    const ex = WEEK_EXTRAS[i];
+    if(ex){
+      const kul = el("ul");
+      ex.keys.forEach(k => { const li = el("li"); li.appendChild(richText(k)); kul.appendChild(li); });
+      const rul = el("ul");
+      ex.res.forEach(([name,url,note]) => rul.appendChild(el("li",{},[
+        el("a",{href:url, target:"_blank", rel:"noopener", text:name}),
+        note ? el("span",{text:note}) : null
+      ])));
+      body.appendChild(el("div",{cls:"wextra"},[
+        el("div",{cls:"xcol"},[el("h4",{text:"Key points to remember"}), kul]),
+        el("div",{cls:"xcol res"},[el("h4",{text:"Extra resources"}), rul])
+      ]));
+    }
     const det = el("details",{cls:"week"+(n===cw?" current":""), "data-w":String(n)},[sum, body]);
     if(firstRender ? (n === cw || (cw === 0 && n === 1)) : open.has(String(n))) det.open = true;
     list.appendChild(det);
