@@ -15,8 +15,3 @@ Open `index.html` in any browser. You can double-click it, since it needs no bui
 - Set your start date at the top. Week dates and the current week update from it.
 - Tick off tasks, count NeetCode problems per category, and draft STAR stories.
 - Progress is saved in your browser's localStorage. Click **Export progress** to download a JSON backup, and **Import progress** to restore it on another computer or browser.
-
-## Host it on GitHub Pages (optional)
-
-Repo → **Settings → Pages** → Source: *Deploy from a branch* → Branch: `main`, folder `/ (root)`.
-The page will be served at `https://<user>.github.io/Prep_sde2/`.
