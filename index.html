@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SDE-2 Prep Handbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: an engineer's logbook. Summary meters up top, a 12-week track grid, then week cards, trackers and reference. */
+:root{
+  --bg:#F3F5F9; --surface:#FFFFFF; --sunk:#E9EDF4; --ink:#141A26; --muted:#586277; --line:#D8DEE8;
+  --accent:#2747C9; --on-accent:#FFFFFF;
+  --dsa:#2747C9; --hld:#0D7A84; --lld:#A86400; --be:#2C7A38; --beh:#A3367A; --car:#5B6070;
+  --warn:#B4441C;
+  --f-display:"Schibsted Grotesk", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E1219; --surface:#161B25; --sunk:#1D2330; --ink:#E5E8EF; --muted:#9AA3B5; --line:#2A3142;
+  --accent:#8FA3FF; --on-accent:#0E1219;
+  --dsa:#8FA3FF; --hld:#4EC4CC; --lld:#EDA640; --be:#6CC97A; --beh:#E78BC4; --car:#A8ADBA; --warn:#F08A5D;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0E1219; --surface:#161B25; --sunk:#1D2330; --ink:#E5E8EF; --muted:#9AA3B5; --line:#2A3142;
+  --accent:#8FA3FF; --on-accent:#0E1219;
+  --dsa:#8FA3FF; --hld:#4EC4CC; --lld:#EDA640; --be:#6CC97A; --beh:#E78BC4; --car:#A8ADBA; --warn:#F08A5D;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{color-scheme:light}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:28px 64px}
+.wrap{max-width:1060px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(30px,5vw,44px);font-weight:800;letter-spacing:-.02em}
+h2{font-size:24px;font-weight:700;letter-spacing:-.01em}
+h3{font-size:16px;font-weight:700}
+p{margin:0}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{color:var(--muted);max-width:66ch}
+.sec-head{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+
+/* header */
+header{display:flex;flex-direction:column;gap:14px}
+.controls{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center;font-size:14px}
+.controls label{display:flex;gap:8px;align-items:center;color:var(--muted)}
+.controls input[type=date]{font:inherit;font-family:var(--f-mono);font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+.weekpill{font-family:var(--f-mono);font-size:13px;background:var(--accent);color:var(--on-accent);padding:4px 10px;border-radius:999px}
+.status{font-size:13px;color:var(--muted)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:500 13px/1 var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 11px;cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.status.bad{color:var(--warn)}
+.meters{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:6px}
+.meter{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.meter .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.meter .big{font-family:var(--f-mono);font-size:22px;font-weight:600}
+.meter .lbl{font-size:13px;color:var(--muted)}
+.bar{height:6px;background:var(--sunk);border-radius:99px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--c,var(--accent));border-radius:99px;transition:width .25s ease}
+nav.jump{display:flex;flex-wrap:wrap;gap:8px}
+nav.jump a{font-size:13px;text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--surface);padding:5px 11px;border-radius:999px}
+nav.jump a:hover{border-color:var(--accent);color:var(--accent)}
+
+/* gantt */
+.gantt-scroll{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
+.gantt{display:grid;grid-template-columns:150px repeat(12,minmax(38px,1fr));gap:4px;min-width:640px;font-size:13px}
+.gantt .h{font-family:var(--f-mono);font-size:11px;color:var(--muted);text-align:center;padding-bottom:2px}
+.gantt .h.now{color:var(--accent);font-weight:600}
+.gantt .phase{font-size:11.5px;font-weight:600;font-family:var(--f-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:2px solid var(--line);padding:2px 4px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gantt .tl{display:flex;align-items:center;gap:8px;padding-right:6px;white-space:nowrap}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+.gantt .cell{height:26px;border-radius:4px;background:var(--sunk)}
+.gantt .cell.l1{background:color-mix(in srgb, var(--c) 35%, transparent)}
+.gantt .cell.l2{background:var(--c)}
+.gantt .cell.now{outline:2px solid var(--accent);outline-offset:1px}
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;font-size:12.5px;color:var(--muted);align-items:center}
+.legend span{display:flex;gap:6px;align-items:center}
+.legend i{width:18px;height:10px;border-radius:3px;display:inline-block}
+.tweaks{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:16px}
+.tweak{border-left:3px solid var(--line);padding:2px 0 2px 12px;font-size:14px;color:var(--muted)}
+.tweak b{color:var(--ink);font-weight:600;display:block}
+
+/* weeks */
+.weeks{display:flex;flex-direction:column;gap:10px}
+details.week{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+details.week.current{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+details.week>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:14px 16px}
+details.week>summary::-webkit-details-marker{display:none}
+.wk{font-family:var(--f-mono);font-weight:600;font-size:13px;background:var(--sunk);border-radius:6px;padding:6px 8px;min-width:46px;text-align:center}
+.current .wk{background:var(--accent);color:var(--on-accent)}
+.wtitle{min-width:0;display:flex;flex-direction:column;gap:2px}
+.wtitle .meta{font-size:12.5px;color:var(--muted);font-family:var(--f-mono)}
+.wtitle .meta .tag{color:var(--accent);font-weight:600}
+.wcount{display:flex;flex-direction:column;align-items:flex-end;gap:5px;font-family:var(--f-mono);font-size:12.5px;color:var(--muted);min-width:70px}
+.wcount .bar{width:70px}
+.wbody{padding:0 16px 16px;display:flex;flex-direction:column;gap:12px}
+.wnote{font-size:13.5px;color:var(--muted);background:var(--sunk);border-radius:8px;padding:10px 12px}
+ul.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+ul.tasks li label{display:grid;grid-template-columns:20px 92px 1fr;gap:10px;align-items:start;padding:7px 6px;border-radius:6px;cursor:pointer}
+ul.tasks li label:hover{background:var(--sunk)}
+ul.tasks input{margin:3px 0 0;width:16px;height:16px;accent-color:var(--accent)}
+.chip{font-family:var(--f-mono);font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--c);background:color-mix(in srgb, var(--c) 13%, transparent);border-radius:4px;padding:3px 6px;text-align:center;align-self:start;margin-top:1px}
+ul.tasks .txt{min-width:0}
+ul.tasks input:checked ~ .txt{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line)}
+
+/* neetcode */
+.nc-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:18px;align-items:start}
+.nc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.nc{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:7px}
+.nc.full{border-color:color-mix(in srgb, var(--be) 60%, var(--line))}
+.nc .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.nc .name{font-weight:600;font-size:14px}
+.nc .wkl{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.nc .ctl{display:flex;align-items:center;gap:8px}
+.nc .ctl .bar{flex:1}
+.nc .n{font-family:var(--f-mono);font-size:13px;min-width:44px;text-align:right}
+.step{font:600 15px/1 var(--f-mono);width:28px;height:26px;border-radius:6px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);cursor:pointer}
+.step:hover{border-color:var(--accent)}
+.side{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.side ol,.side ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.side code{font-family:var(--f-mono);font-size:12.5px;background:var(--sunk);padding:1px 5px;border-radius:4px}
+
+/* stories */
+.stories{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.story{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.story .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.story .state{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.story .state.ok{color:var(--be)}
+.story p.q{font-size:13.5px;color:var(--muted)}
+.story textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;min-height:130px;resize:vertical;width:100%}
+
+/* routine */
+.routine{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.slot{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.slot .hrs{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.slot ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.slot li{display:grid;grid-template-columns:62px 1fr;gap:10px}
+.slot li .t{font-family:var(--f-mono);font-size:12px;color:var(--muted);padding-top:2px}
+
+/* loop + resources */
+.loop{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.round{border-top:3px solid var(--c);background:var(--surface);border-radius:0 0 10px 10px;padding:14px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.round .dur{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.tbl-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:14px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--sunk)}
+tr:last-child td{border-bottom:none}
+td.when{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);white-space:nowrap}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+
+@media (max-width:760px){
+  .nc-layout{grid-template-columns:1fr}
+  ul.tasks li label{grid-template-columns:20px 1fr}
+  ul.tasks .chip{grid-column:2;justify-self:start}
+  ul.tasks .txt{grid-column:2}
+  details.week>summary{grid-template-columns:auto 1fr;}
+  .wcount{grid-column:1 / -1;flex-direction:row;align-items:center;justify-content:flex-start}
+}
+@media (prefers-reduced-motion:reduce){ .bar>i{transition:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Backend · Node.js · 4 yrs exp · 12-week plan</span>
+    <h1>SDE-2 Prep Handbook</h1>
+    <p class="lede">Your plan for the next three months: NeetCode 150 for DSA, Hello Interview and Jordan for system design, Shrayansh Jain for LLD, plus a weekly backend track for Node.js, databases and distributed systems. Tick tasks off as you go. Progress is saved in this browser. Use Export to back it up or move it to another computer.</p>
+    <div class="controls">
+      <label for="start">Plan starts on <input type="date" id="start"></label>
+      <span class="weekpill" id="weekpill">Week 1 of 12</span>
+      <span class="mono" id="enddate" style="font-size:13px;color:var(--muted)"></span>
+      <span class="status" id="status">Progress is saved in this browser.</span>
+      <span class="btns">
+        <button type="button" class="btn" id="export">Export progress</button>
+        <button type="button" class="btn" id="import">Import progress</button>
+        <input type="file" id="importfile" accept="application/json,.json" hidden>
+      </span>
+    </div>
+    <div class="meters">
+      <div class="meter"><div class="row"><span class="lbl">Weekly tasks</span><span class="big" id="m-tasks">0/0</span></div><div class="bar"><i id="b-tasks" style="width:0"></i></div></div>
+      <div class="meter"><div class="row"><span class="lbl">NeetCode 150 solved</span><span class="big" id="m-nc">0/150</span></div><div class="bar" style="--c:var(--dsa)"><i id="b-nc" style="width:0"></i></div></div>
+      <div class="meter"><div class="row"><span class="lbl">STAR stories drafted</span><span class="big" id="m-st">0/9</span></div><div class="bar" style="--c:var(--beh)"><i id="b-st" style="width:0"></i></div></div>
+    </div>
+    <nav class="jump" aria-label="Sections">
+      <a href="#plan">Plan at a glance</a><a href="#weeks">Week by week</a><a href="#neetcode">NeetCode tracker</a><a href="#stories">Story bank</a><a href="#routine">Daily routine</a><a href="#loop">The interview loop</a><a href="#resources">Resources</a>
+    </nav>
+  </header>
+
+  <section id="plan">
+    <div class="sec-head">
+      <span class="eyebrow">Overview</span>
+      <h2>The plan at a glance</h2>
+      <p class="lede">The five phases from the roadmap, laid out over 12 weeks. A darker cell means the track is a main focus that week. A lighter cell means it gets maintenance time.</p>
+    </div>
+    <div class="gantt-scroll"><div class="gantt" id="gantt"></div></div>
+    <div class="legend">
+      <span><i style="background:var(--dsa)"></i>Main focus</span>
+      <span><i style="background:color-mix(in srgb, var(--dsa) 35%, transparent)"></i>Maintenance</span>
+      <span><i style="background:var(--sunk)"></i>Off</span>
+    </div>
+    <div class="tweaks">
+      <div class="tweak"><b>DSA never stops</b>After week 5, keep doing 1–2 problems a day while you study design. If you stop for 5 weeks, the patterns fade before your interviews.</div>
+      <div class="tweak"><b>Backend track every week</b>One backend topic each week, studied on weekday evenings. Backend deep-dive rounds lean on Node, Postgres, Mongo, Kafka and Redis.</div>
+      <div class="tweak"><b>Apply from week 7</b>Recruiter calls and scheduling take 2–4 weeks, so applying in week 7 puts your interviews in weeks 10–14, after the mocks.</div>
+      <div class="tweak"><b>Stories start early</b>Write behavioral stories a little at a time from week 1. If you leave them for the last week, they come out vague.</div>
+    </div>
+  </section>
+
+  <section id="weeks">
+    <div class="sec-head">
+      <span class="eyebrow">Checklist</span>
+      <h2>Week by week</h2>
+      <p class="lede">The current week opens automatically. Dates follow the start date set at the top of the page.</p>
+    </div>
+    <div class="weeks" id="weeklist"></div>
+  </section>
+
+  <section id="neetcode">
+    <div class="sec-head">
+      <span class="eyebrow">DSA</span>
+      <h2>NeetCode 150 tracker</h2>
+      <p class="lede">Count each problem once you have solved it on your own, without the video. Each card shows the week its category is scheduled for.</p>
+    </div>
+    <div class="nc-layout">
+      <div class="nc-grid" id="ncgrid"></div>
+      <aside class="side">
+        <div>
+          <h3>How to attempt each problem</h3>
+          <ol style="margin-top:8px">
+            <li>Read the problem and say the brute force out loud. Note its time and space complexity.</li>
+            <li>Spend 25 minutes on your own attempt. Write down the pattern you think fits.</li>
+            <li>Still stuck? Read one hint, then try for 10 more minutes.</li>
+            <li>Only then watch CodeStoryWithMIK or the NeetCode video. Close it and code the solution from memory.</li>
+            <li>Log it: the pattern, why you got stuck, and the date. Re-solve it after 3 days and again after 7.</li>
+          </ol>
+        </div>
+        <div>
+          <h3>JavaScript gotchas in interviews</h3>
+          <ul style="margin-top:8px">
+            <li>JS has no built-in heap. Have a 30-line <code>MinHeap</code> class you can write from memory. LeetCode's JS runtime ships <code>@datastructures-js/priority-queue</code>, but most interview editors don't.</li>
+            <li><code>arr.sort()</code> sorts as strings. For numbers, use <code>(a, b) =&gt; a - b</code>.</li>
+            <li><code>new Array(n).fill([])</code> shares one array across all slots. Use <code>Array.from({length: n}, () =&gt; [])</code> instead.</li>
+            <li>Use <code>Map</code> and <code>Set</code> for hashing. Object keys are always converted to strings.</li>
+            <li>Recursion overflows at roughly 10k frames. Use iterative DFS on big grids and graphs.</li>
+            <li>Numbers lose precision above 2<sup>53</sup>. Use <code>BigInt</code> or a modulo when values grow that large.</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="stories">
+    <div class="sec-head">
+      <span class="eyebrow">Behavioral</span>
+      <h2>Story bank</h2>
+      <p class="lede">Write one real story for each prompt in STAR form: Situation, Task, Action, Result. Put numbers in the Result. SDE-2 interviewers listen for scope: decisions you drove, people you aligned, and impact you can measure. Your drafts save as you type.</p>
+    </div>
+    <div class="stories" id="storygrid"></div>
+  </section>
+
+  <section id="routine">
+    <div class="sec-head">
+      <span class="eyebrow">Time budget · ~17 h / week</span>
+      <h2>Daily routine</h2>
+      <p class="lede">Built around a full-time job. It's better to keep this pace every day than to do long sessions now and then.</p>
+    </div>
+    <div class="routine">
+      <div class="slot"><h3>Weekdays</h3><span class="hrs">≈ 2.5 h</span>
+        <ul>
+          <li><span class="t">AM 60–75m</span><span>DSA: 2 problems from this week's NeetCode categories, using the attempt method.</span></li>
+          <li><span class="t">PM 60m</span><span>This week's theory track: an HLD concept, an LLD pattern or the backend topic.</span></li>
+          <li><span class="t">PM 15m</span><span>Read yesterday's mistake-log entries. Say each solution's approach out loud.</span></li>
+        </ul>
+      </div>
+      <div class="slot"><h3>Saturday</h3><span class="hrs">≈ 4–5 h</span>
+        <ul>
+          <li><span class="t">2h</span><span>3 problems, one of them timed: 45 minutes, talking through it as if in a real interview.</span></li>
+          <li><span class="t">1.5h</span><span>One full design, start to finish: requirements, estimates, API, diagram, deep dives. Use Excalidraw or paper.</span></li>
+          <li><span class="t">1h</span><span>Backend deep dive. Run something real, like an EXPLAIN plan, a Kafka consumer or a heap snapshot.</span></li>
+        </ul>
+      </div>
+      <div class="slot"><h3>Sunday</h3><span class="hrs">≈ 3 h, then rest</span>
+        <ul>
+          <li><span class="t">1.5h</span><span>Weekly revision: re-solve 5 problems from the mistake log without looking.</span></li>
+          <li><span class="t">45m</span><span>Write or polish one STAR story in the story bank.</span></li>
+          <li><span class="t">15m</span><span>Check off this page and plan next week. Move anything unfinished forward.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="loop">
+    <div class="sec-head">
+      <span class="eyebrow">What you're preparing for</span>
+      <h2>The SDE-2 backend loop</h2>
+      <p class="lede">Most product companies run some version of these rounds. Each track in this plan maps to one of them.</p>
+    </div>
+    <div class="loop">
+      <div class="round" style="--c:var(--dsa)"><h3>DSA × 1–2</h3><span class="dur">45–60 min each</span><p>One or two mediums, sometimes a hard. You're judged on clean code, testing it yourself and explaining complexity, as well as on reaching the right answer.</p></div>
+      <div class="round" style="--c:var(--lld)"><h3>LLD / machine coding</h3><span class="dur">60–120 min</span><p>Working, extensible code for a system like a parking lot or Splitwise. Common in Indian product companies. Interviewers check class design, patterns and how easily the design takes new requirements.</p></div>
+      <div class="round" style="--c:var(--hld)"><h3>HLD</h3><span class="dur">45–60 min</span><p>You lead: requirements, scale estimates, API, high-level design, then deep dives. At SDE-2 you're expected to defend trade-offs, not just draw boxes.</p></div>
+      <div class="round" style="--c:var(--be)"><h3>Backend deep dive</h3><span class="dur">45–60 min</span><p>Your past projects, then Node internals, database choices, indexing, transactions, queues and failure handling.</p></div>
+      <div class="round" style="--c:var(--beh)"><h3>Hiring manager / behavioral</h3><span class="dur">45–60 min</span><p>Ownership, conflict, impact and mentoring. Amazon tests its Leadership Principles in every round, so map each story to two or three principles.</p></div>
+    </div>
+  </section>
+
+  <section id="resources">
+    <div class="sec-head">
+      <span class="eyebrow">Reference</span>
+      <h2>Resources</h2>
+      <p class="lede">The LinkedIn post's list, plus the additions for the backend track. Stick to these. Adding more lists mostly adds overlap.</p>
+    </div>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>Resource</th><th>Use it for</th><th>When</th></tr></thead>
+        <tbody id="restable"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>Based on the resources in <a href="https://www.linkedin.com/feed/update/urn:li:activity:7409242635460255744/" target="_blank" rel="noopener">this LinkedIn post</a>, adjusted for a Node.js backend engineer with about 4 years of experience.</footer>
+</div>
+
+<script>
+(function(){
+const TRACKS = {
+  dsa:{name:"DSA", c:"var(--dsa)"},
+  hld:{name:"HLD", c:"var(--hld)"},
+  lld:{name:"LLD", c:"var(--lld)"},
+  be:{name:"Backend", c:"var(--be)"},
+  beh:{name:"Behavioral", c:"var(--beh)"},
+  car:{name:"Mocks · Jobs", c:"var(--car)"}
+};
+const TRACK_LONG = {dsa:"DSA (NeetCode)", hld:"System design", lld:"Low-level design", be:"Backend track", beh:"Behavioral", car:"Mocks & applying"};
+const PHASES = [
+  {from:1,to:5,name:"Phase 1 · DSA core"},
+  {from:6,to:8,name:"Phase 2 · HLD"},
+  {from:9,to:10,name:"Phase 3 · LLD"},
+  {from:11,to:12,name:"Phase 5 · Mocks"}
+];
+const WEEKS = [
+ {focus:"Arrays, hashing, two pointers, sliding window",
+  note:"Set up a mistake log first, either a sheet or a notes file. Columns: problem, pattern, why you got stuck, date, re-solve dates.",
+  tasks:[
+  ["dsa","NeetCode: Arrays & Hashing (9)"],
+  ["dsa","NeetCode: Two Pointers (5)"],
+  ["dsa","NeetCode: Sliding Window (6)"],
+  ["dsa","Create the mistake log and add every problem you got stuck on"],
+  ["be","JS core: scope, closures, hoisting, the temporal dead zone"],
+  ["be","JS core: the 4 rules of `this`, call/apply/bind, arrow functions, prototypes and the prototype chain"],
+  ["beh","Project inventory: every major project from the last 4 years with your role, stack, scale (RPS, data size, users) and outcome"],
+  ["car","Target list: 15–25 companies, sorted into dream, target and safe"]
+ ]},
+ {focus:"Stack, binary search, linked list",
+  tasks:[
+  ["dsa","NeetCode: Stack (7)"],
+  ["dsa","NeetCode: Binary Search (7)"],
+  ["dsa","NeetCode: Linked List (11)"],
+  ["dsa","Sunday: re-solve 5 week-1 problems without looking"],
+  ["be","Event loop: call stack, microtask vs macrotask queues, rendering in browsers vs Node"],
+  ["be","Promise internals: states, then-chaining. Implement Promise.all, Promise.allSettled and a concurrency-limited promise pool"],
+  ["be","async/await under the hood, error propagation, unhandled rejections"],
+  ["car","Resume rewrite: every bullet gets a number (latency, throughput, cost, users, incidents)"]
+ ]},
+ {focus:"Trees and tries",
+  tasks:[
+  ["dsa","NeetCode: Trees (15)"],
+  ["dsa","NeetCode: Tries (3)"],
+  ["dsa","Write BFS, DFS (recursive and iterative) and a Trie from memory"],
+  ["dsa","Sunday: re-solve 5 problems from the mistake log"],
+  ["be","Node internals: libuv, the 6 event loop phases, process.nextTick vs setImmediate vs setTimeout(0)"],
+  ["be","libuv thread pool: what uses it (fs, dns.lookup, crypto, zlib), UV_THREADPOOL_SIZE, what goes through OS async instead"],
+  ["beh","Read the Hello Interview behavioral guide and learn the STAR format"]
+ ]},
+ {focus:"Heaps, backtracking, intervals",
+  tasks:[
+  ["dsa","NeetCode: Heap / Priority Queue (7)"],
+  ["dsa","NeetCode: Backtracking (9)"],
+  ["dsa","NeetCode: Intervals (6)"],
+  ["dsa","Write a MinHeap class in JS from memory (push, pop, peek, heapify)"],
+  ["be","Streams: readable, writable, transform, pipeline(), backpressure, highWaterMark, Buffers"],
+  ["be","Scaling Node: cluster vs worker_threads vs child_process. When each one fits, and how PM2/K8s replace cluster"],
+  ["car","Update your LinkedIn headline, About section and Open to Work settings. Message 3 ex-colleagues about referrals"]
+ ]},
+ {focus:"Graphs and advanced graphs",
+  note:"This is the last week of heavy DSA. From week 6, drop to 1–2 problems a day.",
+  tasks:[
+  ["dsa","NeetCode: Graphs (13)"],
+  ["dsa","NeetCode: Advanced Graphs (6): Dijkstra, Prim/Kruskal, topological sort, union-find"],
+  ["dsa","First timed session: 2 mediums in 45 minutes, talking through them out loud"],
+  ["be","V8 garbage collection: young and old generation, scavenge, mark-sweep-compact, --max-old-space-size"],
+  ["be","Memory leaks in Node: closures, global caches, listeners, timers. Take and compare heap snapshots with --inspect"],
+  ["be","AsyncLocalStorage / async_hooks for request IDs and tracing"],
+  ["beh","Draft stories: production outage, difficult bug, ownership"]
+ ]},
+ {focus:"HLD fundamentals + 1-D DP",
+  note:"Phase 2 starts. Mornings stay on DSA. Evenings move to system design.",
+  tasks:[
+  ["dsa","NeetCode: 1-D Dynamic Programming (12)"],
+  ["hld","Hello Interview, System Design in a Hurry: core concepts and the delivery framework (requirements → entities → API → high-level → deep dives)"],
+  ["hld","Jordan: load balancers, caching, CDN, replication, partitioning/sharding, consistent hashing"],
+  ["hld","CAP and PACELC, strong vs eventual consistency, back-of-envelope estimation"],
+  ["hld","Practice: URL shortener. Design it yourself first, then compare with the Hello Interview walkthrough"],
+  ["be","PostgreSQL indexing: B-tree, composite column order, covering and partial indexes, GIN. Read EXPLAIN ANALYZE output"]
+ ]},
+ {focus:"Messaging, feeds, chat + 2-D DP",
+  tasks:[
+  ["dsa","NeetCode: 2-D Dynamic Programming (11)"],
+  ["hld","Jordan: message queues and Kafka, stream processing, idempotent consumers"],
+  ["hld","Practice: WhatsApp / chat system (WebSockets, presence, delivery receipts)"],
+  ["hld","Practice: news feed (fan-out on write vs read) and notification system"],
+  ["hld","ByteByteGo: distributed rate limiter"],
+  ["be","Transactions: isolation levels, MVCC, dirty, non-repeatable and phantom reads, write skew, SELECT … FOR UPDATE, deadlocks"],
+  ["car","Start applying: 5+ applications a week, with referrals first"]
+ ]},
+ {focus:"Classic HLD problems + greedy, bits",
+  tasks:[
+  ["dsa","NeetCode: Greedy (8)"],
+  ["dsa","NeetCode: Bit Manipulation (7)"],
+  ["hld","Practice: Ticketmaster (seat holds, contention) and Uber (geo-indexing, matching)"],
+  ["hld","Practice: Dropbox (chunking, presigned URLs) and YouTube Top-K"],
+  ["hld","DDIA ch. 5–7 (replication, partitioning, transactions) as reference reading"],
+  ["hld","Record yourself doing one 45-minute design, then compare it with the walkthrough"],
+  ["be","MongoDB: aggregation pipeline ($match, $group, $lookup, $unwind, $facet), the ESR index rule, embedding vs referencing"],
+  ["beh","Draft stories: conflict, deadline pressure, scaling"]
+ ]},
+ {focus:"OOP, SOLID, design patterns",
+  note:"Phase 3 starts. Write LLD in TypeScript. It shows OOP clearly and it's your daily language.",
+  tasks:[
+  ["dsa","NeetCode: Math & Geometry (8). That completes all 150"],
+  ["dsa","Re-solve every mistake-log problem older than 2 weeks"],
+  ["lld","OOP and SOLID with your own TypeScript examples (Shrayansh Jain LLD playlist)"],
+  ["lld","Patterns (Refactoring Guru): Strategy, Observer, Factory, Singleton, Builder, Decorator, State, Command, Chain of Responsibility"],
+  ["lld","Practice: Parking Lot, Snake & Ladder, Elevator"],
+  ["hld","1 problem: web crawler"],
+  ["be","Redis: data structures, cache-aside vs write-through, eviction, cache stampede, distributed lock (SET NX PX, Redlock caveats)"],
+  ["beh","Draft stories: leadership, a mistake you made, mentoring"]
+ ]},
+ {focus:"Machine coding + company-tagged DSA",
+  tasks:[
+  ["lld","Practice: BookMyShow (concurrent seat booking) and Splitwise (simplify debts)"],
+  ["lld","Practice: LRU cache, logger, in-memory rate limiter. Chess is optional"],
+  ["lld","Write 2 designs as runnable code in 90 minutes each"],
+  ["dsa","Company-tagged: top 30 questions for your first-choice company"],
+  ["hld","1 problem: ad click aggregator"],
+  ["be","Kafka (partitions, consumer groups, offsets, ordering, rebalancing, exactly-once caveats) vs RabbitMQ (exchanges, acks, DLQ)"],
+  ["beh","Polish all 9 stories. Add numbers and map each one to 2–3 Amazon Leadership Principles"]
+ ]},
+ {focus:"Mock interviews",
+  note:"Phase 5 starts. Treat mocks as the real thing: camera on, timer running, no notes.",
+  tasks:[
+  ["car","2 coding mocks (peer, interviewing.io or Exponent)"],
+  ["car","1 HLD mock"],
+  ["car","1 LLD / machine coding mock, timed"],
+  ["car","1 behavioral mock using your story bank"],
+  ["dsa","Company-tagged questions for your next 2 target companies"],
+  ["hld","Re-do 2 designs from weeks 6–8 from scratch"],
+  ["be","Resilience: token bucket vs sliding window, idempotency keys, retries with backoff and jitter, circuit breaker, saga, outbox pattern"]
+ ]},
+ {focus:"Final mocks, revision, offers",
+  tasks:[
+  ["car","2 coding mocks + 1 HLD mock"],
+  ["dsa","Re-solve the whole mistake log"],
+  ["hld","Revise your notes on 6 core designs: URL shortener, chat, feed, Ticketmaster, Uber, rate limiter"],
+  ["lld","Revise pattern notes and re-do one design in 60 minutes"],
+  ["be","API design: REST conventions, cursor vs offset pagination, versioning, JWT and OAuth2, N+1 queries"],
+  ["car","Negotiation prep: know your number, line up interviews so offers arrive together, practice the salary conversation"]
+ ]}
+];
+const NC = [
+  ["Arrays & Hashing",9,1],["Two Pointers",5,1],["Sliding Window",6,1],
+  ["Stack",7,2],["Binary Search",7,2],["Linked List",11,2],
+  ["Trees",15,3],["Tries",3,3],
+  ["Heap / Priority Queue",7,4],["Backtracking",9,4],["Intervals",6,4],
+  ["Graphs",13,5],["Advanced Graphs",6,5],
+  ["1-D DP",12,6],["2-D DP",11,7],
+  ["Greedy",8,8],["Bit Manipulation",7,8],["Math & Geometry",8,9]
+];
+const STORIES = [
+  ["conflict","Conflict","A disagreement with a peer, PM or senior engineer about a technical decision. How did you resolve it, and what did the relationship look like afterwards?"],
+  ["leadership","Leadership without authority","A time you got people to adopt an approach you didn't have the power to require."],
+  ["outage","Production outage","An incident you handled: detection, mitigation, root cause, and what you changed so it couldn't happen again."],
+  ["bug","Difficult bug","The hardest bug you've chased: a race condition, a memory leak, data corruption. How did you narrow it down?"],
+  ["scaling","Scaling a system","Something that broke under load and how you fixed it. Give before and after numbers."],
+  ["ownership","Ownership","Something outside your job description that you took on because nobody else would."],
+  ["deadline","Deadline pressure","A tight deadline where you had to cut scope or make trade-offs. What did you push back on?"],
+  ["mistake","A mistake you made","A real mistake with real impact. Own it, then focus on what you learned and changed."],
+  ["mentoring","Mentoring juniors","Someone you helped grow. Show what changed for them because of you."]
+];
+const RES = [
+  ["NeetCode 150","https://neetcode.io/practice","Main DSA list. Do the problems in category order.","Weeks 1–9"],
+  ["CodeStoryWithMIK","https://www.youtube.com/@codestorywithMIK","Only after a 25-minute attempt. Good for brute force → optimal reasoning.","When stuck"],
+  ["LeetCode company tags","https://leetcode.com/problemset/","Company-specific questions. Tags need Premium, so buy one month for weeks 10–12.","Weeks 10–12"],
+  ["Hello Interview: System Design in a Hurry","https://www.hellointerview.com/learn/system-design/in-a-hurry/introduction","Delivery framework, core concepts, then the problem walkthroughs. Focus on the trade-offs.","Weeks 6–12"],
+  ["Jordan has no life (Jordan Epstein)","https://www.youtube.com/@jordanhasnolife5163","Concepts in depth: caching, replication, sharding, Kafka, consistency.","Weeks 6–8"],
+  ["ByteByteGo","https://www.youtube.com/@ByteByteGo","Short visual explainers for quick revision.","Weeks 6–12"],
+  ["Designing Data-Intensive Applications","https://dataintensive.net/","Reference book. Read ch. 5–7 and look the rest up as needed.","Weeks 8+"],
+  ["Concept && Coding (Shrayansh Jain)","https://www.youtube.com/@ConceptandCoding","LLD playlist: SOLID, patterns, and complete problem walkthroughs.","Weeks 9–10"],
+  ["Refactoring Guru","https://refactoring.guru/design-patterns","Pattern catalogue with diagrams. Read each pattern, then write it in TypeScript.","Weeks 9–10"],
+  ["Node.js docs: event loop","https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick","The official explanation of the event loop phases.","Weeks 2–3"],
+  ["Use The Index, Luke","https://use-the-index-luke.com/","SQL indexing, explained with execution plans.","Week 6"],
+  ["PostgreSQL: transaction isolation","https://www.postgresql.org/docs/current/transaction-iso.html","Isolation levels and the anomalies each one allows.","Week 7"],
+  ["MongoDB aggregation docs","https://www.mongodb.com/docs/manual/aggregation/","Pipeline stages, with runnable examples.","Week 8"],
+  ["Redis docs","https://redis.io/docs/latest/","Data types, eviction, distributed locks.","Week 9"],
+  ["Apache Kafka docs","https://kafka.apache.org/documentation/","Design section: partitions, replication, delivery semantics.","Week 10"],
+  ["Arpit Bhayani","https://www.youtube.com/@AsliEngineering","Database internals and real-world system breakdowns. Good backend deep-dive material.","Any week"],
+  ["Hello Interview: Behavioral","https://www.hellointerview.com/","Behavioral guide (under Learn): what interviewers score at each level.","Weeks 3, 10"],
+  ["Amazon Leadership Principles","https://www.amazon.jobs/content/en/our-workplace/leadership-principles","Map each story to principles. Useful even if you're not applying to Amazon.","Week 10"],
+  ["interviewing.io / Exponent","https://interviewing.io/","Mock interviews with engineers, or use Exponent's peer mocks.","Weeks 11–12"]
+];
+
+const DEFAULT_START = "2026-11-16";
+const LS_KEY = "sde2-handbook-v1";
+let state = blank();
+function blank(){ return {start:DEFAULT_START, done:{}, nc:{}, stories:{}}; }
+function obj(x){ return x && typeof x === "object" && !Array.isArray(x) ? x : {}; }
+function normalize(d){
+  d = obj(d);
+  return {
+    start: typeof d.start === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d.start) ? d.start : DEFAULT_START,
+    done: Object.assign({}, obj(d.done)),
+    nc: Object.assign({}, obj(d.nc)),
+    stories: Object.assign({}, obj(d.stories))
+  };
+}
+function hasContent(s){ return Object.keys(s.done).length || Object.keys(s.nc).length || Object.keys(s.stories).length || s.start !== DEFAULT_START; }
+function loadLocal(){ try{ const raw = localStorage.getItem(LS_KEY); if(raw) state = normalize(JSON.parse(raw)); }catch(e){} }
+function saveLocal(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
+
+/* ---------- dates ---------- */
+function parseDate(s){ const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); }
+function addDays(dt,n){ const x = new Date(dt); x.setDate(x.getDate()+n); return x; }
+function fmt(dt){ return dt.toLocaleDateString("en-IN",{day:"numeric",month:"short"}); }
+function currentWeek(){
+  const t = new Date(); t.setHours(0,0,0,0);
+  const diff = Math.floor((t - parseDate(state.start)) / 864e5);
+  return diff < 0 ? 0 : Math.floor(diff/7) + 1;
+}
+
+/* ---------- render ---------- */
+const $ = id => document.getElementById(id);
+function el(tag, attrs, kids){
+  const n = document.createElement(tag);
+  if(attrs) for(const k in attrs){
+    if(k === "text") n.textContent = attrs[k];
+    else if(k === "style") n.setAttribute("style", attrs[k]);
+    else if(k === "cls") n.className = attrs[k];
+    else n.setAttribute(k, attrs[k]);
+  }
+  (kids||[]).forEach(c => c && n.appendChild(c));
+  return n;
+}
+function phaseOf(w){ return PHASES.find(p => w >= p.from && w <= p.to).name; }
+
+function renderHeader(){
+  $("start").value = state.start;
+  const cw = currentWeek(), s = parseDate(state.start);
+  const end = addDays(s, 83);
+  $("enddate").textContent = fmt(s) + " → " + fmt(end) + " " + end.getFullYear();
+  const pill = $("weekpill");
+  if(cw === 0){ const d = Math.ceil((s - new Date().setHours(0,0,0,0))/864e5); pill.textContent = "Starts in " + d + (d===1?" day":" days"); }
+  else if(cw > 12) pill.textContent = "Plan complete · week " + cw;
+  else pill.textContent = "Week " + cw + " of 12";
+}
+function renderMeters(){
+  let total = 0, done = 0;
+  WEEKS.forEach((w,i) => w.tasks.forEach((_,j) => { total++; if(state.done["w"+(i+1)+"-"+j]) done++; }));
+  $("m-tasks").textContent = done + "/" + total;
+  $("b-tasks").style.width = (100*done/total) + "%";
+  const ncDone = NC.reduce((a,[n,c]) => a + Math.min(c, +state.nc[n] || 0), 0);
+  $("m-nc").textContent = ncDone + "/150";
+  $("b-nc").style.width = (100*ncDone/150) + "%";
+  const st = STORIES.filter(([k]) => (state.stories[k]||"").trim().length >= 80).length;
+  $("m-st").textContent = st + "/" + STORIES.length;
+  $("b-st").style.width = (100*st/STORIES.length) + "%";
+}
+function renderGantt(){
+  const g = $("gantt"); g.textContent = "";
+  const cw = currentWeek();
+  g.appendChild(el("div"));
+  PHASES.forEach(p => g.appendChild(el("div",{cls:"phase", style:"grid-column:span "+(p.to-p.from+1), text:p.name, title:p.name})));
+  g.appendChild(el("div"));
+  for(let w=1; w<=12; w++) g.appendChild(el("div",{cls:"h"+(w===cw?" now":""), text:"W"+w}));
+  Object.keys(TRACKS).forEach(t => {
+    g.appendChild(el("div",{cls:"tl"},[el("span",{cls:"dot", style:"--c:"+TRACKS[t].c}), el("span",{text:TRACK_LONG[t]})]));
+    WEEKS.forEach((wk,i) => {
+      const n = wk.tasks.filter(x => x[0] === t).length;
+      const lvl = n === 0 ? "" : (n >= 3 ? " l2" : " l1");
+      g.appendChild(el("div",{cls:"cell"+lvl+(i+1===cw?" now":""), style:"--c:"+TRACKS[t].c, title:"Week "+(i+1)+" · "+TRACK_LONG[t]+": "+n+(n===1?" task":" tasks")}));
+    });
+  });
+}
+function weekCount(i){
+  const w = WEEKS[i]; let d = 0;
+  w.tasks.forEach((_,j) => { if(state.done["w"+(i+1)+"-"+j]) d++; });
+  return [d, w.tasks.length];
+}
+function renderWeeks(){
+  const list = $("weeklist");
+  const open = new Set([...list.querySelectorAll("details[open]")].map(d => d.dataset.w));
+  const firstRender = !list.children.length;
+  list.textContent = "";
+  const cw = currentWeek(), s = parseDate(state.start);
+  WEEKS.forEach((wk,i) => {
+    const n = i+1, ws = addDays(s, i*7), we = addDays(s, i*7+6);
+    const [d,t] = weekCount(i);
+    const meta = el("span",{cls:"meta"});
+    if(n === cw) meta.appendChild(el("span",{cls:"tag", text:"This week · "}));
+    meta.appendChild(document.createTextNode(fmt(ws)+" – "+fmt(we)+" · "+phaseOf(n)));
+    const sum = el("summary",{},[
+      el("span",{cls:"wk", text:"W"+String(n).padStart(2,"0")}),
+      el("span",{cls:"wtitle"},[el("h3",{text:wk.focus}), meta]),
+      el("span",{cls:"wcount"},[el("span",{id:"wc-"+n, text:d+"/"+t+" done"}), el("span",{cls:"bar"},[el("i",{id:"wb-"+n, style:"width:"+(100*d/t)+"%"})])])
+    ]);
+    const body = el("div",{cls:"wbody"});
+    if(wk.note) body.appendChild(el("p",{cls:"wnote", text:wk.note}));
+    const ul = el("ul",{cls:"tasks"});
+    wk.tasks.forEach(([tr,txt],j) => {
+      const id = "w"+n+"-"+j;
+      const cb = el("input",{type:"checkbox", id:"cb-"+id});
+      cb.checked = !!state.done[id];
+      cb.addEventListener("change", () => {
+        if(cb.checked) state.done[id] = true; else delete state.done[id];
+        const [dd,tt] = weekCount(i);
+        $("wc-"+n).textContent = dd+"/"+tt+" done";
+        $("wb-"+n).style.width = (100*dd/tt)+"%";
+        renderMeters(); persist(400);
+      });
+      ul.appendChild(el("li",{},[el("label",{"for":"cb-"+id},[cb, el("span",{cls:"chip", style:"--c:"+TRACKS[tr].c, text:TRACKS[tr].name}), el("span",{cls:"txt", text:txt})])]));
+    });
+    body.appendChild(ul);
+    const det = el("details",{cls:"week"+(n===cw?" current":""), "data-w":String(n)},[sum, body]);
+    if(firstRender ? (n === cw || (cw === 0 && n === 1)) : open.has(String(n))) det.open = true;
+    list.appendChild(det);
+  });
+}
+function renderNC(){
+  const g = $("ncgrid"); g.textContent = "";
+  NC.forEach(([name,count,wk]) => {
+    const v = Math.min(count, Math.max(0, +state.nc[name] || 0));
+    const card = el("div",{cls:"nc"+(v===count?" full":"")});
+    const num = el("span",{cls:"n", text:v+"/"+count});
+    const fill = el("i",{style:"width:"+(100*v/count)+"%"});
+    const set = nv => {
+      nv = Math.min(count, Math.max(0, nv));
+      if(nv) state.nc[name] = nv; else delete state.nc[name];
+      num.textContent = nv+"/"+count; fill.style.width = (100*nv/count)+"%";
+      card.classList.toggle("full", nv===count);
+      renderMeters(); persist(500);
+    };
+    const minus = el("button",{cls:"step", type:"button", "aria-label":"Remove one solved from "+name, text:"−"});
+    const plus = el("button",{cls:"step", type:"button", "aria-label":"Add one solved to "+name, text:"+"});
+    minus.addEventListener("click", () => set((+state.nc[name]||0) - 1));
+    plus.addEventListener("click", () => set((+state.nc[name]||0) + 1));
+    card.appendChild(el("div",{cls:"top"},[el("span",{cls:"name", text:name}), el("span",{cls:"wkl", text:"W"+wk})]));
+    card.appendChild(el("div",{cls:"ctl"},[minus, el("span",{cls:"bar", style:"--c:var(--dsa)"},[fill]), num, plus]));
+    g.appendChild(card);
+  });
+}
+function renderStories(){
+  const g = $("storygrid");
+  const active = document.activeElement;
+  if(active && active.tagName === "TEXTAREA" && g.contains(active)) return;
+  g.textContent = "";
+  STORIES.forEach(([k,title,q]) => {
+    const ta = el("textarea",{id:"story-"+k, placeholder:"Situation: …\nTask: …\nAction: …\nResult: … (with numbers)", "aria-label":title+" story"});
+    ta.value = state.stories[k] || "";
+    const stat = el("span",{cls:"state"});
+    const upd = () => { const len = ta.value.trim().length; stat.textContent = len >= 80 ? "Drafted" : (len ? "In progress" : "Empty"); stat.classList.toggle("ok", len >= 80); };
+    upd();
+    ta.addEventListener("input", () => {
+      if(ta.value) state.stories[k] = ta.value; else delete state.stories[k];
+      upd(); renderMeters(); persist(1000);
+    });
+    g.appendChild(el("div",{cls:"story"},[el("div",{cls:"top"},[el("h3",{text:title}), stat]), el("p",{cls:"q", text:q}), ta]));
+  });
+}
+function renderRes(){
+  const tb = $("restable"); tb.textContent = "";
+  RES.forEach(([name,url,use,when]) => {
+    tb.appendChild(el("tr",{},[
+      el("td",{},[el("a",{href:url, target:"_blank", rel:"noopener", text:name})]),
+      el("td",{text:use}), el("td",{cls:"when", text:when})
+    ]));
+  });
+}
+function renderAll(){ renderHeader(); renderMeters(); renderGantt(); renderWeeks(); renderNC(); renderStories(); }
+
+/* ---------- persistence (browser localStorage + JSON export/import) ---------- */
+function setStatus(msg, bad){ const s = $("status"); s.textContent = msg; s.classList.toggle("bad", !!bad); }
+let timer = null;
+function persist(delay){
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    try{
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+      setStatus("Saved in this browser at " + new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}) + ".");
+    }catch(e){
+      setStatus("This browser is blocking storage, so progress won't be kept after you close the tab. Use Export to keep a copy.", true);
+    }
+  }, delay);
+}
+$("export").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "sde2-progress-" + new Date().toISOString().slice(0,10) + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  setStatus("Exported. Keep the file somewhere safe.");
+});
+$("import").addEventListener("click", () => $("importfile").click());
+$("importfile").addEventListener("change", e => {
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try{
+      state = normalize(JSON.parse(r.result));
+      $("weeklist").textContent = "";
+      renderAll(); persist(0);
+      setStatus("Imported progress from " + f.name + ".");
+    }catch(err){
+      setStatus("That file isn't a valid progress export. Choose a .json file made with Export progress.", true);
+    }
+    e.target.value = "";
+  };
+  r.readAsText(f);
+});
+
+$("start").addEventListener("change", e => {
+  const v = e.target.value;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v)) return;
+  state.start = v;
+  const list = $("weeklist"); list.textContent = "";
+  renderAll(); persist(300);
+});
+
+loadLocal();
+renderRes();
+renderAll();
+setInterval(() => { renderHeader(); }, 3600000);
+})();
+</script>
+</body>
+</html>
