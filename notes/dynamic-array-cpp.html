@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dynamic Arrays in C++</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#F3F5F9; --surface:#FFFFFF; --sunk:#E9EDF4; --ink:#141A26; --muted:#586277; --line:#D8DEE8;
+  --accent:#2747C9; --on-accent:#FFFFFF; --ok:#2C7A38; --warn:#B4441C; --tip:#0D7A84;
+  --code-bg:#F7F8FB; --c-kw:#2747C9; --c-type:#0D7A84; --c-str:#A86400; --c-num:#A3367A; --c-com:#7A8396; --c-pre:#2C7A38;
+  --f-display:"Schibsted Grotesk", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E1219; --surface:#161B25; --sunk:#1D2330; --ink:#E5E8EF; --muted:#9AA3B5; --line:#2A3142;
+  --accent:#8FA3FF; --on-accent:#0E1219; --ok:#6CC97A; --warn:#F08A5D; --tip:#4EC4CC;
+  --code-bg:#11161F; --c-kw:#8FA3FF; --c-type:#4EC4CC; --c-str:#EDA640; --c-num:#E78BC4; --c-com:#7D879A; --c-pre:#6CC97A;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0E1219; --surface:#161B25; --sunk:#1D2330; --ink:#E5E8EF; --muted:#9AA3B5; --line:#2A3142;
+  --accent:#8FA3FF; --on-accent:#0E1219; --ok:#6CC97A; --warn:#F08A5D; --tip:#4EC4CC;
+  --code-bg:#11161F; --c-kw:#8FA3FF; --c-type:#4EC4CC; --c-str:#EDA640; --c-num:#E78BC4; --c-com:#7D879A; --c-pre:#6CC97A;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{color-scheme:light;scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15.5px;line-height:1.6;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:24px 72px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(30px,5vw,44px);font-weight:800;letter-spacing:-.02em}
+h2{font-size:25px;font-weight:700;letter-spacing:-.01em}
+h3{font-size:17px;font-weight:700;margin-top:10px}
+p{margin:0}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{color:var(--muted);max-width:68ch}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--sunk);padding:1px 5px;border-radius:4px}
+
+.top{max-width:1120px;margin:0 auto 28px;display:flex;flex-direction:column;gap:14px}
+.back{font-size:14px;text-decoration:none;align-self:flex-start;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:5px 12px;border-radius:999px}
+.back:hover{border-color:var(--accent);color:var(--accent)}
+.facts{display:flex;flex-wrap:wrap;gap:8px}
+.facts span{font-family:var(--f-mono);font-size:12px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 9px;color:var(--muted)}
+.facts b{color:var(--ink);font-weight:600}
+
+.layout{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:220px minmax(0,1fr);gap:36px;align-items:start}
+nav.toc{position:sticky;top:16px;display:flex;flex-direction:column;gap:2px;font-size:13.5px;max-height:calc(100vh - 32px);overflow:auto}
+nav.toc .eyebrow{margin-bottom:6px}
+nav.toc a{color:var(--muted);text-decoration:none;padding:5px 10px;border-left:2px solid var(--line)}
+nav.toc a:hover{color:var(--ink)}
+nav.toc a.on{color:var(--accent);border-left-color:var(--accent);font-weight:600}
+nav.toc .lvl{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:12px 10px 4px}
+
+main{min-width:0;display:flex;flex-direction:column;gap:56px}
+section{display:flex;flex-direction:column;gap:14px;scroll-margin-top:16px}
+section>p,section li{max-width:72ch}
+section ul,section ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+.sec-head{display:flex;flex-direction:column;gap:6px;margin-bottom:4px}
+.badge{font-family:var(--f-mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:4px;align-self:flex-start}
+.b1{color:var(--ok);background:color-mix(in srgb, var(--ok) 13%, transparent)}
+.b2{color:var(--accent);background:color-mix(in srgb, var(--accent) 13%, transparent)}
+.b3{color:var(--warn);background:color-mix(in srgb, var(--warn) 13%, transparent)}
+
+/* code */
+.code{position:relative}
+pre{margin:0;background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;font-family:var(--f-mono);font-size:13.2px;line-height:1.6;tab-size:4}
+pre code{background:none;padding:0;font-size:inherit;border-radius:0}
+.tk-kw{color:var(--c-kw);font-weight:600}
+.tk-ty{color:var(--c-type)}
+.tk-str{color:var(--c-str)}
+.tk-num{color:var(--c-num)}
+.tk-com{color:var(--c-com);font-style:italic}
+.tk-pre{color:var(--c-pre)}
+.copy{position:absolute;top:8px;right:8px;font:500 11.5px/1 var(--f-body);color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 8px;cursor:pointer;opacity:.85}
+.copy:hover{color:var(--accent);border-color:var(--accent);opacity:1}
+
+/* callouts */
+.note{border-left:3px solid var(--c,var(--accent));background:color-mix(in srgb, var(--c,var(--accent)) 7%, var(--surface));border-radius:0 8px 8px 0;padding:11px 14px;font-size:14.5px;max-width:78ch}
+.note b:first-child{display:block;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--c,var(--accent));margin-bottom:2px}
+.note.warn{--c:var(--warn)}
+.note.tip{--c:var(--tip)}
+.note.ok{--c:var(--ok)}
+
+/* tables */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+th,td{text-align:left;padding:9px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--sunk)}
+tr:last-child td{border-bottom:none}
+td.t{font-family:var(--f-mono);font-size:13px;white-space:nowrap}
+td code{white-space:nowrap}
+
+/* memory diagram */
+.mem{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;overflow-x:auto}
+.cells{display:grid;grid-template-columns:repeat(8,minmax(40px,1fr));gap:4px;min-width:360px}
+.cell{height:42px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:14px;font-weight:600}
+.cell.used{background:color-mix(in srgb, var(--accent) 18%, transparent);color:var(--ink);border:1px solid color-mix(in srgb, var(--accent) 45%, transparent)}
+.cell.free{border:1px dashed var(--line);color:var(--muted);font-weight:400;font-size:12px}
+.idx{display:grid;grid-template-columns:repeat(8,minmax(40px,1fr));gap:4px;min-width:360px;font-family:var(--f-mono);font-size:11px;color:var(--muted);text-align:center}
+.brace{display:grid;grid-template-columns:5fr 3fr;gap:4px;min-width:360px;font-size:12.5px;text-align:center}
+.brace span{border-top:2px solid var(--c);padding-top:4px;color:var(--c);font-family:var(--f-mono)}
+.grow{display:flex;flex-direction:column;gap:8px;font-family:var(--f-mono);font-size:12.5px}
+.grow .row{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center}
+.grow .blk{display:flex;gap:3px}
+.grow .blk i{width:20px;height:18px;border-radius:3px;background:color-mix(in srgb, var(--accent) 22%, transparent)}
+.grow .blk i.e{background:none;border:1px dashed var(--line)}
+.grow .blk i.n{background:var(--accent)}
+
+/* pattern cards */
+.pats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px}
+.pat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.pat h3{margin:0}
+.pat .used{font-size:13px;color:var(--muted)}
+
+/* practice */
+ol.practice{list-style:none;padding:0;gap:4px}
+ol.practice li{max-width:none}
+ol.practice label{display:grid;grid-template-columns:20px 28px 1fr auto;gap:10px;align-items:center;padding:8px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--line);cursor:pointer}
+ol.practice input{width:16px;height:16px;accent-color:var(--accent);margin:0}
+ol.practice .num{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+ol.practice .why{display:block;font-size:13px;color:var(--muted)}
+ol.practice input:checked ~ span .pname{text-decoration:line-through;color:var(--muted)}
+.diff{font-family:var(--f-mono);font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:3px 6px;border-radius:4px}
+.diff.e{color:var(--ok);background:color-mix(in srgb, var(--ok) 13%, transparent)}
+.diff.m{color:var(--c-str);background:color-mix(in srgb, var(--c-str) 13%, transparent)}
+.prog{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+
+/* quiz */
+details.q{background:var(--surface);border:1px solid var(--line);border-radius:8px;max-width:80ch}
+details.q summary{cursor:pointer;padding:11px 14px;font-weight:600;font-size:14.5px}
+details.q[open] summary{border-bottom:1px dashed var(--line)}
+details.q .a{padding:11px 14px;font-size:14.5px;color:var(--ink);display:flex;flex-direction:column;gap:8px}
+
+.keys{background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:18px 20px}
+.keys ul{margin-top:10px}
+footer{max-width:1120px;margin:56px auto 0;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr;gap:24px}
+  nav.toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px;max-height:none}
+  nav.toc .eyebrow{width:100%}
+  nav.toc .lvl{display:none}
+  nav.toc a{border:1px solid var(--line);border-radius:999px;background:var(--surface);padding:4px 10px}
+  nav.toc a.on{border-color:var(--accent)}
+  ol.practice label{grid-template-columns:20px 1fr auto}
+  ol.practice .num{display:none}
+  .grow .row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <a class="back" href="../index.html#prereqs">← Back to the handbook</a>
+  <span class="eyebrow">Prerequisite 01 · C++ · Before NeetCode 150</span>
+  <h1>Dynamic Arrays in C++ (<code style="font-size:.8em">std::vector</code>)</h1>
+  <p class="lede">Almost every NeetCode 150 problem hands you a <code>vector&lt;int&gt;&amp; nums</code> and expects a vector back. These notes go from the basic syntax to how the vector grows in memory, so you can write array code quickly in an interview and explain its cost when asked.</p>
+  <div class="facts">
+    <span>Level <b>Beginner → Advanced</b></span>
+    <span>Reading <b>≈ 60 min</b></span>
+    <span>Practice <b>12 problems</b></span>
+    <span>Header <b>&lt;vector&gt;</b></span>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="toc" aria-label="On this page">
+    <span class="eyebrow">On this page</span>
+    <a href="#why">Why it matters</a>
+    <span class="lvl">Level 1 · Basics</span>
+    <a href="#static-vs-dynamic">Static vs dynamic</a>
+    <a href="#create">Creating a vector</a>
+    <a href="#access">Reading and writing</a>
+    <a href="#loops">Looping</a>
+    <a href="#passing">Passing to functions</a>
+    <span class="lvl">Level 2 · Everyday use</span>
+    <a href="#insert-erase">Insert and erase</a>
+    <a href="#size-capacity">size, capacity, resize, reserve</a>
+    <a href="#twod">2D vectors</a>
+    <a href="#stl">STL algorithms</a>
+    <a href="#sorting">Custom sorting</a>
+    <span class="lvl">Level 3 · Advanced</span>
+    <a href="#inside">How it works inside</a>
+    <a href="#amortized">Amortized O(1)</a>
+    <a href="#invalidation">Iterator invalidation</a>
+    <a href="#remove">Erase–remove idiom</a>
+    <a href="#move">Copy vs move</a>
+    <a href="#gotchas">Gotchas</a>
+    <span class="lvl">Apply it</span>
+    <a href="#build">Build your own</a>
+    <a href="#patterns">NeetCode patterns</a>
+    <a href="#complexity">Complexity cheat sheet</a>
+    <a href="#practice">Practice ladder</a>
+    <a href="#quiz">Self-check</a>
+    <a href="#keys">Key points</a>
+  </nav>
+
+  <main>
+    <section id="why">
+      <div class="sec-head"><span class="eyebrow">Start here</span><h2>Why it matters</h2></div>
+      <p>A <b>dynamic array</b> is an array that grows when you add to it. In C++ it is <code>std::vector</code>. It stores elements next to each other in memory, like a plain array, so <code>v[i]</code> is O(1). Unlike a plain array, it tracks its own size and reallocates when it runs out of room.</p>
+      <ul>
+        <li>LeetCode's C++ signatures use it everywhere: <code>int maxProfit(vector&lt;int&gt;&amp; prices)</code>, <code>vector&lt;vector&lt;int&gt;&gt; threeSum(...)</code>.</li>
+        <li>You also use it as a stack, a frequency table, a DP table, a grid, an adjacency list and a visited array.</li>
+        <li>Interviewers ask follow-ups about it: why <code>push_back</code> is "amortized" O(1), and what happens to a reference after the vector grows.</li>
+      </ul>
+    </section>
+
+    <!-- ================= LEVEL 1 ================= -->
+    <section id="static-vs-dynamic">
+      <div class="sec-head"><span class="badge b1">Level 1 · Basics</span><h2>Static array vs dynamic array</h2></div>
+      <div class="tbl"><table>
+        <thead><tr><th></th><th>Static: <code>int a[5]</code></th><th>Dynamic: <code>vector&lt;int&gt; v</code></th></tr></thead>
+        <tbody>
+          <tr><td>Size</td><td>Fixed when compiled</td><td>Grows and shrinks at runtime</td></tr>
+          <tr><td>Memory</td><td>Usually on the stack</td><td>Elements live on the heap, the vector object holds a pointer</td></tr>
+          <tr><td>Knows its length?</td><td>No. You pass the size separately</td><td>Yes, <code>v.size()</code></td></tr>
+          <tr><td>Copy with <code>=</code>?</td><td>No</td><td>Yes (copies every element)</td></tr>
+          <tr><td>Bounds-checked access</td><td>No</td><td><code>v.at(i)</code> is; <code>v[i]</code> is not</td></tr>
+          <tr><td>Use in interviews</td><td>Rarely</td><td>Almost always</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="create">
+      <div class="sec-head"><h2>Creating a vector</h2></div>
+<pre><code>#include &lt;vector&gt;
+#include &lt;iostream&gt;
+using namespace std;               // fine in interview code, avoid it in header files
+
+vector&lt;int&gt; a;                     // empty: size 0
+vector&lt;int&gt; b(5);                  // {0, 0, 0, 0, 0}
+vector&lt;int&gt; c(5, -1);              // {-1, -1, -1, -1, -1}
+vector&lt;int&gt; d = {3, 1, 4};         // initializer list
+vector&lt;int&gt; e(d);                  // copy of d
+vector&lt;int&gt; f(d.begin(), d.end()); // from an iterator range
+vector&lt;string&gt; words = {"go", "cpp"};
+vector&lt;long long&gt; big(n, 0);       // use long long when sums can pass 2^31</code></pre>
+      <div class="note warn"><b>Watch out</b>Round brackets and curly braces mean different things. <code>vector&lt;int&gt; v(5)</code> is five zeros. <code>vector&lt;int&gt; v{5}</code> is one element, the number 5.</div>
+    </section>
+
+    <section id="access">
+      <div class="sec-head"><h2>Reading and writing elements</h2></div>
+<pre><code>vector&lt;int&gt; v = {10, 20, 30};
+
+v[0];          // 10. No bounds check: v[10] is undefined behaviour, not an error
+v.at(1);       // 20. Throws std::out_of_range if the index is bad
+v.front();     // 10  (undefined on an empty vector)
+v.back();      // 30  (undefined on an empty vector)
+v[2] = 99;     // {10, 20, 99}
+
+v.size();      // 3. Type is size_t, which is unsigned
+v.empty();     // false. Prefer this over v.size() == 0
+
+v.push_back(40);   // {10, 20, 99, 40}. Amortized O(1)
+v.pop_back();      // {10, 20, 99}. O(1). Returns void, not the element!
+
+int top = v.back();   // to "pop and use", read first...
+v.pop_back();         // ...then pop</code></pre>
+    </section>
+
+    <section id="loops">
+      <div class="sec-head"><h2>Looping</h2></div>
+<pre><code>// 1. Index loop: use it when you need i (two pointers, prefix sums, neighbours)
+for (int i = 0; i &lt; (int)v.size(); i++) cout &lt;&lt; v[i] &lt;&lt; ' ';
+
+// 2. Range-for by value: each x is a copy
+for (int x : v) cout &lt;&lt; x &lt;&lt; ' ';
+
+// 3. Range-for by reference: changes the vector itself
+for (int&amp; x : v) x *= 2;
+
+// 4. Range-for by const reference: no copy, no changes. Best for strings and nested vectors
+for (const auto&amp; row : grid) { /* ... */ }
+
+// 5. Iterators: what the STL algorithms use
+for (auto it = v.begin(); it != v.end(); ++it) cout &lt;&lt; *it &lt;&lt; ' ';</code></pre>
+      <div class="note tip"><b>Habit</b>Cast the size to <code>int</code> in index loops: <code>i &lt; (int)v.size()</code>. It avoids signed/unsigned warnings and the empty-vector bug covered in <a href="#gotchas">Gotchas</a>.</div>
+    </section>
+
+    <section id="passing">
+      <div class="sec-head"><h2>Passing vectors to functions</h2></div>
+<pre><code>void byValue(vector&lt;int&gt; v);            // copies all n elements: O(n) per call
+void byRef(vector&lt;int&gt;&amp; v);             // no copy, and changes are seen by the caller
+void byConstRef(const vector&lt;int&gt;&amp; v);  // no copy, read-only. Your default for inputs
+
+vector&lt;int&gt; build(int n) {              // returning by value is cheap (move or RVO)
+    vector&lt;int&gt; res;
+    for (int i = 0; i &lt; n; i++) res.push_back(i * i);
+    return res;
+}</code></pre>
+      <div class="note warn"><b>Common TLE</b>In recursion (DFS, backtracking), passing a vector by value copies it on every call. Pass it by reference and undo your change after the recursive call.</div>
+    </section>
+
+    <!-- ================= LEVEL 2 ================= -->
+    <section id="insert-erase">
+      <div class="sec-head"><span class="badge b2">Level 2 · Everyday use</span><h2>Insert and erase in the middle</h2></div>
+      <p>Elements are stored side by side, so inserting or erasing anywhere but the end shifts every element after it. That costs O(n).</p>
+<pre><code>vector&lt;int&gt; v = {1, 2, 3, 4, 5};
+
+v.insert(v.begin() + 1, 9);        // {1, 9, 2, 3, 4, 5}    O(n)
+v.insert(v.begin(), 0);            // {0, 1, 9, 2, 3, 4, 5} insert at front: O(n)
+v.erase(v.begin() + 2);            // {0, 1, 2, 3, 4, 5}    erase index 2: O(n)
+v.erase(v.begin(), v.begin() + 2); // {2, 3, 4, 5}          erase range [first, last)
+v.clear();                         // {} size 0, but capacity is kept</code></pre>
+      <div class="note"><b>Interview tip</b>If you need to add or remove at the front a lot, use <code>deque&lt;int&gt;</code> (O(1) at both ends). If you only add at the back, build the vector backwards and call <code>reverse</code> once at the end.</div>
+    </section>
+
+    <section id="size-capacity">
+      <div class="sec-head"><h2>size, capacity, resize, reserve</h2></div>
+      <ul>
+        <li><b>size</b> is how many elements you have stored.</li>
+        <li><b>capacity</b> is how many fit before the vector must reallocate. It is always ≥ size.</li>
+        <li><code>resize(n)</code> changes the <b>size</b>. New slots are filled with 0 (or a value you pass).</li>
+        <li><code>reserve(n)</code> changes only the <b>capacity</b>. It creates no elements.</li>
+      </ul>
+<pre><code>vector&lt;int&gt; v;
+v.reserve(100);     // capacity &gt;= 100, size 0. v[0] is still undefined behaviour!
+v.resize(3);        // size 3: {0, 0, 0}
+v.resize(5, 7);     // {0, 0, 0, 7, 7}
+v.resize(2);        // {0, 0}  (shrinking drops elements from the end)
+cout &lt;&lt; v.size() &lt;&lt; ' ' &lt;&lt; v.capacity();   // 2 100
+
+v.shrink_to_fit();  // asks to drop unused capacity. A request, not a guarantee</code></pre>
+      <div class="note warn"><b>Classic bug</b><code>reserve(n)</code> then <code>v[i] = x</code> writes into memory that isn't an element yet. After <code>reserve</code>, use <code>push_back</code>. After <code>resize</code> (or <code>vector&lt;int&gt; v(n)</code>), use <code>v[i] = x</code>.</div>
+    </section>
+
+    <section id="twod">
+      <div class="sec-head"><h2>2D vectors: grids, DP tables, adjacency lists</h2></div>
+<pre><code>int m = 3, n = 4;
+vector&lt;vector&lt;int&gt;&gt; grid(m, vector&lt;int&gt;(n, 0));   // 3 rows x 4 cols, all zeros
+grid[1][2] = 5;
+int rows = grid.size(), cols = grid[0].size();
+
+// DP table with an extra row and column for the base case
+vector&lt;vector&lt;int&gt;&gt; dp(m + 1, vector&lt;int&gt;(n + 1, 0));
+
+// Adjacency list for a graph with n nodes (rows can have different lengths)
+vector&lt;vector&lt;int&gt;&gt; adj(n);
+for (auto&amp; e : edges) {               // edges = {{0,1}, {1,2}, ...}
+    adj[e[0]].push_back(e[1]);
+    adj[e[1]].push_back(e[0]);        // undirected: add both ways
+}
+
+// The 4 directions for grid BFS/DFS
+int dr[4] = {1, -1, 0, 0};
+int dc[4] = {0, 0, 1, -1};
+for (int k = 0; k &lt; 4; k++) {
+    int nr = r + dr[k], nc = c + dc[k];
+    if (nr &lt; 0 || nr &gt;= rows || nc &lt; 0 || nc &gt;= cols) continue;
+    // ... visit grid[nr][nc]
+}</code></pre>
+      <div class="note tip"><b>Read the input shape</b>LeetCode passes grids as <code>vector&lt;vector&lt;char&gt;&gt;&amp; grid</code> (Number of Islands) or <code>vector&lt;vector&lt;int&gt;&gt;&amp;</code>. Check the element type, since <code>'1'</code> and <code>1</code> are different.</div>
+    </section>
+
+    <section id="stl">
+      <div class="sec-head"><h2>STL algorithms you'll use daily</h2><p class="lede">From <code>&lt;algorithm&gt;</code> and <code>&lt;numeric&gt;</code>. They all take a range <code>[begin, end)</code>.</p></div>
+<pre><code>#include &lt;algorithm&gt;
+#include &lt;numeric&gt;
+
+sort(v.begin(), v.end());                   // ascending, O(n log n)
+sort(v.rbegin(), v.rend());                 // descending
+sort(v.begin(), v.end(), greater&lt;int&gt;());   // descending, another way
+reverse(v.begin(), v.end());                // O(n)
+
+long long total = accumulate(v.begin(), v.end(), 0LL);  // 0LL so the sum doesn't overflow int
+int mx = *max_element(v.begin(), v.end());  // * turns the iterator into a value
+int mxIdx = max_element(v.begin(), v.end()) - v.begin();   // ...or subtract begin() for the index
+int mn = *min_element(v.begin(), v.end());
+
+auto it = find(v.begin(), v.end(), 7);      // v.end() when not found, O(n)
+if (it != v.end()) cout &lt;&lt; "found at " &lt;&lt; (it - v.begin());
+int sevens = count(v.begin(), v.end(), 7);
+
+vector&lt;int&gt; idx(n);
+iota(idx.begin(), idx.end(), 0);            // {0, 1, 2, ..., n-1}
+fill(v.begin(), v.end(), -1);               // set every element to -1
+swap(v[i], v[j]);
+if (a == b) { /* vectors compare element by element */ }</code></pre>
+      <h3>Binary search helpers (on a sorted vector)</h3>
+<pre><code>vector&lt;int&gt; s = {1, 3, 3, 5, 8};
+
+auto lo = lower_bound(s.begin(), s.end(), 3);   // first element &gt;= 3 -&gt; index 1
+auto hi = upper_bound(s.begin(), s.end(), 3);   // first element &gt;  3 -&gt; index 3
+int first = lo - s.begin();                     // iterator -&gt; index
+int howMany = hi - lo;                          // number of 3s = 2
+bool has5 = binary_search(s.begin(), s.end(), 5);   // true
+
+// "insert position" (LeetCode 35) is exactly lower_bound
+int pos = lower_bound(s.begin(), s.end(), 4) - s.begin();   // 3</code></pre>
+      <div class="note"><b>Still learn the manual version</b>NeetCode's Binary Search problems expect you to write the loop yourself. Use <code>lower_bound</code> when binary search is only one step of a larger solution.</div>
+    </section>
+
+    <section id="sorting">
+      <div class="sec-head"><h2>Custom sorting with lambdas</h2></div>
+<pre><code>vector&lt;vector&lt;int&gt;&gt; intervals = {{5, 6}, {1, 3}, {2, 4}};
+sort(intervals.begin(), intervals.end());   // by [0], ties by [1]: {1,3} {2,4} {5,6}
+
+// Sort by end time (Non-overlapping Intervals, Meeting Rooms)
+sort(intervals.begin(), intervals.end(),
+     [](const vector&lt;int&gt;&amp; a, const vector&lt;int&gt;&amp; b) { return a[1] &lt; b[1]; });
+
+// Sort by frequency (high first), then by value
+unordered_map&lt;int, int&gt; freq;
+for (int x : nums) freq[x]++;
+sort(nums.begin(), nums.end(), [&amp;](int a, int b) {
+    if (freq[a] != freq[b]) return freq[a] &gt; freq[b];
+    return a &lt; b;
+});
+
+// pair sorts by .first, then .second
+vector&lt;pair&lt;int, int&gt;&gt; byDist;              // {distance, index}
+byDist.push_back({5, 0});
+byDist.emplace_back(2, 1);                  // builds the pair in place, same result
+sort(byDist.begin(), byDist.end());</code></pre>
+      <div class="note warn"><b>Comparator rule</b>Return <code>true</code> only if <code>a</code> must come strictly before <code>b</code>. Use <code>&lt;</code> or <code>&gt;</code>, never <code>&lt;=</code>. A <code>&lt;=</code> comparator breaks <code>sort</code>'s rules and can crash or produce garbage on inputs with equal values.</div>
+    </section>
+
+    <!-- ================= LEVEL 3 ================= -->
+    <section id="inside">
+      <div class="sec-head"><span class="badge b3">Level 3 · Advanced</span><h2>How a vector works inside</h2></div>
+      <p>A vector object is small (24 bytes on a 64-bit machine). It holds three pointers into one block of heap memory: where the data starts, where the used part ends, and where the block ends.</p>
+      <div class="mem" role="img" aria-label="A vector with size 5 and capacity 8: five used slots holding 4, 8, 15, 16, 23, then three unused slots.">
+        <div class="cells">
+          <div class="cell used">4</div><div class="cell used">8</div><div class="cell used">15</div><div class="cell used">16</div><div class="cell used">23</div>
+          <div class="cell free">unused</div><div class="cell free">unused</div><div class="cell free">unused</div>
+        </div>
+        <div class="idx"><span>[0]</span><span>[1]</span><span>[2]</span><span>[3]</span><span>[4]</span><span>[5]</span><span>[6]</span><span>[7]</span></div>
+        <div class="brace"><span style="--c:var(--accent)">size() = 5</span><span style="--c:var(--muted)">spare room</span></div>
+        <p style="font-size:13.5px;color:var(--muted)">capacity() = 8. <code>begin</code> points at [0], <code>end</code> points just past [4], and the block ends after [7]. The next 3 <code>push_back</code> calls just write into spare slots.</p>
+      </div>
+      <h3>What happens when it is full</h3>
+      <ol>
+        <li>Allocate a new block, usually 2× bigger (GCC and Clang) or 1.5× bigger (MSVC).</li>
+        <li>Move or copy every element into the new block. This is the O(n) step.</li>
+        <li>Free the old block.</li>
+        <li>Write the new element.</li>
+      </ol>
+      <div class="mem grow" role="img" aria-label="Capacity doubling: 1, 2, 4, 8. Each time the array is full, the elements are copied into a block twice the size.">
+        <div class="row"><span>push 1 → cap 1</span><span class="blk"><i class="n"></i></span></div>
+        <div class="row"><span>push 2 → cap 2 (copy 1)</span><span class="blk"><i></i><i class="n"></i></span></div>
+        <div class="row"><span>push 3 → cap 4 (copy 2)</span><span class="blk"><i></i><i></i><i class="n"></i><i class="e"></i></span></div>
+        <div class="row"><span>push 4 → cap 4</span><span class="blk"><i></i><i></i><i></i><i class="n"></i></span></div>
+        <div class="row"><span>push 5 → cap 8 (copy 4)</span><span class="blk"><i></i><i></i><i></i><i></i><i class="n"></i><i class="e"></i><i class="e"></i><i class="e"></i></span></div>
+      </div>
+      <p>Run this to watch it happen on your own compiler:</p>
+<pre><code>vector&lt;int&gt; v;
+size_t lastCap = v.capacity();
+for (int i = 0; i &lt; 40; i++) {
+    v.push_back(i);
+    if (v.capacity() != lastCap) {
+        cout &lt;&lt; "size " &lt;&lt; v.size() &lt;&lt; " -&gt; capacity " &lt;&lt; v.capacity() &lt;&lt; '\n';
+        lastCap = v.capacity();
+    }
+}
+// GCC / Clang: 1 2 4 8 16 32 64
+// MSVC:        1 2 3 4 6 9 13 19 28 42</code></pre>
+    </section>
+
+    <section id="amortized">
+      <div class="sec-head"><h2>Why push_back is amortized O(1)</h2></div>
+      <p>One <code>push_back</code> can cost O(n) when it triggers a copy. But copies are rare, and they get rarer as the vector grows.</p>
+      <p>Push n elements with doubling. The copies happen at sizes 1, 2, 4, …, n/2, so the total copy work is <b>1 + 2 + 4 + … + n/2 &lt; n</b>. Add the n writes and the total is under 2n. Spread over n pushes, that is O(1) each on average. "Amortized" means exactly this: a guaranteed average over a sequence of operations, not over random inputs.</p>
+      <div class="note"><b>Likely follow-up: why multiply, not add?</b>If the vector grew by a fixed +10 each time, it would copy at 10, 20, 30, …, n. That totals about n²/20 copies, which is O(n) per push. Only multiplying by a constant factor gives O(1) amortized.</div>
+      <div class="note tip"><b>Reserve when you know the size</b>If you know the final size, call <code>res.reserve(n)</code> first. It skips all the intermediate reallocations. Most of the time it doesn't change the big-O, but it's a cheap speed-up and shows the interviewer you know how vectors work.</div>
+    </section>
+
+    <section id="invalidation">
+      <div class="sec-head"><h2>Iterator and reference invalidation</h2><p class="lede">The most common real vector bug, and a favourite interview question.</p></div>
+      <p>When a vector reallocates, its elements move to a new address. Every pointer, reference and iterator to the old block now points at freed memory.</p>
+<pre><code>vector&lt;int&gt; v = {1, 2, 3};
+int&amp; first = v[0];
+int* p = &amp;v[1];
+v.push_back(4);        // capacity was 3, so this reallocates
+cout &lt;&lt; first &lt;&lt; *p;   // undefined behaviour: both point into freed memory
+
+// Wrong: adding to the vector you are looping over
+for (int x : v) v.push_back(x);           // undefined behaviour
+
+// Right: loop by index up to the original size
+int n = v.size();
+for (int i = 0; i &lt; n; i++) v.push_back(v[i]);   // {1,2,3,4,1,2,3,4}</code></pre>
+      <div class="tbl"><table>
+        <thead><tr><th>Operation</th><th>What it invalidates</th></tr></thead>
+        <tbody>
+          <tr><td><code>push_back</code>, <code>emplace_back</code>, <code>insert</code> that reallocates</td><td>Everything: all iterators, pointers and references</td></tr>
+          <tr><td><code>push_back</code> without reallocating</td><td>Only <code>end()</code></td></tr>
+          <tr><td><code>insert</code> without reallocating</td><td>Everything at or after the insert point</td></tr>
+          <tr><td><code>erase</code>, <code>pop_back</code></td><td>Everything at or after the erased position</td></tr>
+          <tr><td><code>reserve</code> (if capacity grows), <code>shrink_to_fit</code></td><td>Everything</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="remove">
+      <div class="sec-head"><h2>Erasing many elements: the erase–remove idiom</h2></div>
+      <p>Calling <code>erase</code> inside a loop is O(n²), because every erase shifts the rest of the array. Instead, move the elements you keep to the front in one pass, then cut off the tail once.</p>
+<pre><code>// Remove all even numbers in O(n)
+v.erase(remove_if(v.begin(), v.end(), [](int x) { return x % 2 == 0; }), v.end());
+
+// Remove every 0
+v.erase(remove(v.begin(), v.end(), 0), v.end());
+
+// C++20 shortcut, same thing
+erase_if(v, [](int x) { return x % 2 == 0; });
+
+// Remove duplicates: sort, then unique, then erase
+sort(v.begin(), v.end());
+v.erase(unique(v.begin(), v.end()), v.end());
+
+// If you must erase while iterating, use the iterator erase returns
+for (auto it = v.begin(); it != v.end(); ) {
+    if (*it &lt; 0) it = v.erase(it);   // O(n) each time, so avoid this in hot loops
+    else ++it;
+}</code></pre>
+      <div class="note ok"><b>This is a LeetCode pattern</b><code>remove</code> doesn't actually erase anything. It moves the kept elements to the front and returns where the kept part ends. LeetCode 26 and 27 ask you to write exactly that by hand. See <a href="#patterns">In-place write pointer</a>.</div>
+    </section>
+
+    <section id="move">
+      <div class="sec-head"><h2>Copy vs move</h2></div>
+<pre><code>vector&lt;int&gt; a(1'000'000, 1);
+vector&lt;int&gt; b = a;              // copy: O(n), now two million ints in memory
+vector&lt;int&gt; c = std::move(a);   // move: O(1), c takes a's block. Don't use a's contents again
+
+vector&lt;vector&lt;int&gt;&gt; res;
+vector&lt;int&gt; path = {1, 2, 3};
+res.push_back(path);            // copies path. Right for backtracking, since you keep changing path
+vector&lt;int&gt; tmp = {4, 5};
+res.push_back(std::move(tmp));  // moves tmp in. Use when you won't need tmp afterwards</code></pre>
+      <p>Returning a local vector from a function never copies: the compiler moves it or builds it in place (RVO). So writing <code>return res;</code> is fine.</p>
+    </section>
+
+    <section id="gotchas">
+      <div class="sec-head"><h2>Gotchas that cost people interviews</h2></div>
+      <h3>1. size() is unsigned</h3>
+<pre><code>vector&lt;int&gt; v;                              // empty
+for (int i = 0; i &lt; v.size() - 1; i++)      // v.size() - 1 wraps to 18446744073709551615
+    cout &lt;&lt; v[i];                           // reads way out of bounds
+
+for (int i = 0; i + 1 &lt; (int)v.size(); i++) { /* ... */ }  // safe
+for (int i = 0; i &lt; (int)v.size() - 1; i++) { /* ... */ }  // also safe: the cast happens before the - 1</code></pre>
+      <h3>2. vector&lt;bool&gt; is not a normal vector</h3>
+      <p>It packs bits, so <code>vector&lt;bool&gt;</code> elements are not real <code>bool</code>s and <code>bool&amp; b = vb[0]</code> won't compile. It's fine for a visited array. If you need references to elements, or more speed, use <code>vector&lt;char&gt;</code> or <code>vector&lt;int&gt;</code>.</p>
+      <h3>3. Out-of-range access fails silently</h3>
+      <p><code>v[i]</code> with a bad <code>i</code> may print garbage, crash later, or seem to work. While debugging, use <code>v.at(i)</code>, or compile with <code>-D_GLIBCXX_DEBUG</code> (GCC) to get bounds checks on <code>[]</code>.</p>
+      <h3>4. Undefined on an empty vector</h3>
+      <p><code>front()</code>, <code>back()</code>, <code>pop_back()</code> and <code>*max_element(...)</code> on an empty vector are all undefined. Check <code>empty()</code> first, especially in stack problems.</p>
+      <h3>5. clear() keeps the memory</h3>
+      <p><code>clear()</code> sets size to 0 but keeps the capacity. To actually free it: <code>vector&lt;int&gt;().swap(v);</code></p>
+      <h3>6. Integer overflow</h3>
+      <p><code>accumulate(v.begin(), v.end(), 0)</code> sums in <code>int</code> because the start value is an <code>int</code>. Use <code>0LL</code>. The same applies to products and to <code>mid = (lo + hi) / 2</code>; write <code>lo + (hi - lo) / 2</code>.</p>
+    </section>
+
+    <!-- ================= APPLY ================= -->
+    <section id="build">
+      <div class="sec-head"><span class="eyebrow">Apply it</span><h2>Build your own dynamic array</h2><p class="lede">This is NeetCode's <a href="https://neetcode.io/problems/dynamicArray" target="_blank" rel="noopener">Design Dynamic Array</a> problem. Write it from memory once and the whole "Level 3" section will make sense.</p></div>
+      <p>Spec: <code>DynamicArray(int capacity)</code>, <code>get(i)</code>, <code>set(i, n)</code>, <code>pushback(n)</code>, <code>popback()</code>, <code>resize()</code> (double the capacity), <code>getSize()</code>, <code>getCapacity()</code>. Capacity starts above 0, and indices are always valid.</p>
+<pre><code>class DynamicArray {
+private:
+    int* arr;
+    int size;
+    int capacity;
+
+public:
+    DynamicArray(int capacity) : arr(new int[capacity]), size(0), capacity(capacity) {}
+
+    ~DynamicArray() { delete[] arr; }
+
+    // Copying would make two objects delete the same block, so forbid it
+    DynamicArray(const DynamicArray&amp;) = delete;
+    DynamicArray&amp; operator=(const DynamicArray&amp;) = delete;
+
+    int get(int i) { return arr[i]; }
+
+    void set(int i, int n) { arr[i] = n; }
+
+    void pushback(int n) {
+        if (size == capacity) resize();   // full: grow first
+        arr[size++] = n;
+    }
+
+    int popback() {
+        return arr[--size];               // the slot stays allocated, it's just no longer counted
+    }
+
+    void resize() {
+        capacity *= 2;
+        int* bigger = new int[capacity];
+        for (int i = 0; i &lt; size; i++) bigger[i] = arr[i];   // the O(n) copy
+        delete[] arr;
+        arr = bigger;
+    }
+
+    int getSize() { return size; }
+
+    int getCapacity() { return capacity; }
+};</code></pre>
+      <div class="note"><b>Follow-ups to be ready for</b>
+        Why double instead of +1? (Amortized O(1), see above.) When should it shrink? (At ¼ full, not ½. Shrinking at ½ means a push/pop/push/pop sequence right at the boundary reallocates every time.) How does the real <code>std::vector</code> differ? (It's a template, moves elements instead of copying them, and constructs elements only when they're added.)</div>
+    </section>
+
+    <section id="patterns">
+      <div class="sec-head"><h2>Vector patterns in NeetCode 150</h2><p class="lede">The same few vector moves come up again and again. Learn the shape of each one.</p></div>
+      <div class="pats">
+        <div class="pat">
+          <h3>Frequency array</h3>
+          <p class="used">Valid Anagram, Group Anagrams, Permutation in String, Minimum Window Substring</p>
+<pre><code>vector&lt;int&gt; cnt(26, 0);
+for (char ch : s) cnt[ch - 'a']++;
+for (char ch : t) cnt[ch - 'a']--;
+for (int c : cnt) if (c != 0) return false;
+// Two vectors compare with ==, so cntA == cntB works too</code></pre>
+        </div>
+        <div class="pat">
+          <h3>Prefix sums</h3>
+          <p class="used">Range Sum Query, Subarray Sum Equals K, Product of Array Except Self</p>
+<pre><code>int n = nums.size();
+vector&lt;long long&gt; pre(n + 1, 0);
+for (int i = 0; i &lt; n; i++) pre[i + 1] = pre[i] + nums[i];
+// sum of nums[l..r] inclusive:
+long long sum = pre[r + 1] - pre[l];</code></pre>
+        </div>
+        <div class="pat">
+          <h3>In-place write pointer</h3>
+          <p class="used">Remove Element, Remove Duplicates, Move Zeroes</p>
+<pre><code>int removeElement(vector&lt;int&gt;&amp; nums, int val) {
+    int k = 0;                       // next slot to write
+    for (int i = 0; i &lt; (int)nums.size(); i++)
+        if (nums[i] != val) nums[k++] = nums[i];
+    return k;                        // first k elements are the answer
+}</code></pre>
+        </div>
+        <div class="pat">
+          <h3>Vector as a stack</h3>
+          <p class="used">Valid Parentheses, Daily Temperatures, Car Fleet, Largest Rectangle</p>
+<pre><code>vector&lt;int&gt; res(n, 0), st;           // st holds indices
+for (int i = 0; i &lt; n; i++) {
+    while (!st.empty() &amp;&amp; temps[i] &gt; temps[st.back()]) {
+        res[st.back()] = i - st.back();
+        st.pop_back();
+    }
+    st.push_back(i);
+}</code></pre>
+        </div>
+        <div class="pat">
+          <h3>Bucket by count</h3>
+          <p class="used">Top K Frequent Elements (O(n), no heap)</p>
+<pre><code>unordered_map&lt;int, int&gt; freq;
+for (int x : nums) freq[x]++;
+vector&lt;vector&lt;int&gt;&gt; bucket(nums.size() + 1);
+for (auto&amp; [num, f] : freq) bucket[f].push_back(num);
+vector&lt;int&gt; res;
+for (int f = nums.size(); f &gt;= 1 &amp;&amp; (int)res.size() &lt; k; f--)
+    for (int num : bucket[f])
+        if ((int)res.size() &lt; k) res.push_back(num);</code></pre>
+        </div>
+        <div class="pat">
+          <h3>Prefix and suffix in the output array</h3>
+          <p class="used">Product of Array Except Self (O(1) extra space)</p>
+<pre><code>vector&lt;int&gt; res(n, 1);
+int prefix = 1;
+for (int i = 0; i &lt; n; i++) { res[i] = prefix; prefix *= nums[i]; }
+int suffix = 1;
+for (int i = n - 1; i &gt;= 0; i--) { res[i] *= suffix; suffix *= nums[i]; }
+return res;</code></pre>
+        </div>
+        <div class="pat">
+          <h3>Backtracking path</h3>
+          <p class="used">Subsets, Combination Sum, Permutations, N-Queens</p>
+<pre><code>vector&lt;vector&lt;int&gt;&gt; res;
+vector&lt;int&gt; path;
+void dfs(vector&lt;int&gt;&amp; nums, int i) {
+    if (i == (int)nums.size()) { res.push_back(path); return; }  // copy
+    path.push_back(nums[i]);     // choose
+    dfs(nums, i + 1);
+    path.pop_back();             // undo
+    dfs(nums, i + 1);            // skip
+}</code></pre>
+        </div>
+        <div class="pat">
+          <h3>Visited and distance arrays</h3>
+          <p class="used">Graphs, Dijkstra, Course Schedule, Rotting Oranges</p>
+<pre><code>vector&lt;bool&gt; seen(n, false);
+vector&lt;int&gt; dist(n, INT_MAX);        // INT_MAX is in &lt;climits&gt;
+vector&lt;int&gt; indegree(n, 0);
+vector&lt;vector&lt;bool&gt;&gt; vis(rows, vector&lt;bool&gt;(cols, false));</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="complexity">
+      <div class="sec-head"><h2>Complexity cheat sheet</h2></div>
+      <div class="tbl"><table>
+        <thead><tr><th>Operation</th><th>Time</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td><code>v[i]</code>, <code>at</code>, <code>front</code>, <code>back</code></td><td class="t">O(1)</td><td>Contiguous memory, so it's address arithmetic</td></tr>
+          <tr><td><code>push_back</code>, <code>emplace_back</code></td><td class="t">O(1) amortized</td><td>O(n) on the push that reallocates</td></tr>
+          <tr><td><code>pop_back</code></td><td class="t">O(1)</td><td>Never reallocates</td></tr>
+          <tr><td><code>insert</code> / <code>erase</code> in the middle or front</td><td class="t">O(n)</td><td>Shifts every later element</td></tr>
+          <tr><td><code>size</code>, <code>empty</code>, <code>capacity</code></td><td class="t">O(1)</td><td>Pointer subtraction</td></tr>
+          <tr><td><code>find</code>, <code>count</code>, <code>accumulate</code>, <code>reverse</code></td><td class="t">O(n)</td><td>Linear scan</td></tr>
+          <tr><td><code>sort</code></td><td class="t">O(n log n)</td><td>Introsort, not stable. <code>stable_sort</code> if order of equal items matters</td></tr>
+          <tr><td><code>lower_bound</code>, <code>upper_bound</code>, <code>binary_search</code></td><td class="t">O(log n)</td><td>Vector must be sorted</td></tr>
+          <tr><td>Copy (<code>b = a</code>, pass by value)</td><td class="t">O(n)</td><td>Pass by <code>const&amp;</code> to avoid</td></tr>
+          <tr><td>Move (<code>std::move</code>, returning from a function)</td><td class="t">O(1)</td><td>Steals the pointer</td></tr>
+          <tr><td><code>reserve(n)</code>, <code>resize(n)</code></td><td class="t">O(n)</td><td>If it reallocates or adds elements</td></tr>
+          <tr><td>2D <code>vector(m, vector&lt;int&gt;(n))</code></td><td class="t">O(m·n)</td><td>Counts toward your space complexity</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="practice">
+      <div class="sec-head"><h2>Practice ladder</h2><p class="lede">Do these in order. The first six train vector mechanics; the rest are NeetCode 150 problems where those mechanics matter. Ticks are saved in this browser. <span class="prog" id="prog"></span></p></div>
+      <ol class="practice" id="practice"></ol>
+    </section>
+
+    <section id="quiz">
+      <div class="sec-head"><h2>Self-check</h2><p class="lede">Answer out loud first, then open the card.</p></div>
+      <details class="q"><summary>What's the difference between size and capacity?</summary><div class="a"><p>Size is the number of elements stored. Capacity is the number that fit in the current memory block before the vector has to reallocate. Capacity ≥ size, always.</p></div></details>
+      <details class="q"><summary>Why is push_back O(1) amortized and not just O(1)?</summary><div class="a"><p>A push that finds the vector full allocates a bigger block and copies every element, which is O(n). Because capacity grows by a constant factor, those copies add up to less than n over n pushes. So the average stays O(1), even though one push can be O(n).</p></div></details>
+      <details class="q"><summary>You hold <code>int&amp; r = v[0]</code>, then call <code>v.push_back(x)</code>. Is r still safe?</summary><div class="a"><p>Only if the push didn't reallocate, and you can't be sure of that unless you checked capacity. If it reallocated, <code>r</code> refers to freed memory, and using it is undefined behaviour. Either take the reference after the push, or store the index instead.</p></div></details>
+      <details class="q"><summary>What do <code>vector&lt;int&gt; v(3)</code> and <code>vector&lt;int&gt; v{3}</code> contain?</summary><div class="a"><p><code>v(3)</code> is <code>{0, 0, 0}</code>. <code>v{3}</code> is <code>{3}</code>: braces prefer the initializer-list constructor.</p></div></details>
+      <details class="q"><summary>Why does <code>for (int i = 0; i &lt; v.size() - 1; i++)</code> crash on an empty vector?</summary><div class="a"><p><code>v.size()</code> is unsigned, so <code>0 - 1</code> wraps around to the largest <code>size_t</code>. The loop then runs far past the end. Cast first: <code>(int)v.size() - 1</code>, or write <code>i + 1 &lt; v.size()</code>.</p></div></details>
+      <details class="q"><summary>How do you remove duplicates from a vector?</summary><div class="a"><p><code>sort</code>, then <code>v.erase(unique(v.begin(), v.end()), v.end())</code>. O(n log n) total. <code>unique</code> only removes adjacent duplicates, which is why you sort first. If the order must be kept, use an <code>unordered_set</code> to track what you've seen and copy into a new vector.</p></div></details>
+      <details class="q"><summary>When do you use <code>reserve</code> vs <code>resize</code>?</summary><div class="a"><p>Use <code>reserve(n)</code> when you'll fill the vector with <code>push_back</code> and know roughly how many items there will be. Use <code>resize(n)</code> (or construct with <code>vector&lt;int&gt; v(n)</code>) when you'll write by index with <code>v[i] = x</code>.</p></div></details>
+      <details class="q"><summary>Your backtracking solution gets TLE. What vector mistake is likely?</summary><div class="a"><p>Passing the path (or the input) by value to the recursive function, which copies it on every call. Pass by reference, <code>push_back</code> before recursing and <code>pop_back</code> after.</p></div></details>
+    </section>
+
+    <section id="keys">
+      <div class="keys">
+        <span class="eyebrow">Key points to remember</span>
+        <ul>
+          <li><code>vector</code> is a contiguous heap array plus a size and capacity. Index access is O(1).</li>
+          <li><code>push_back</code> is amortized O(1) because capacity grows by a constant factor (×2 in GCC, ×1.5 in MSVC). Insert and erase in the middle are O(n).</li>
+          <li>Reallocation invalidates every pointer, reference and iterator into the vector. Never hold one across a <code>push_back</code>.</li>
+          <li>Pass inputs as <code>const vector&lt;int&gt;&amp;</code>, mutable state as <code>vector&lt;int&gt;&amp;</code>. Return vectors by value.</li>
+          <li><code>size()</code> is unsigned. Cast to <code>int</code> before subtracting.</li>
+          <li><code>reserve</code> sets capacity, <code>resize</code> sets size. Only <code>resize</code> lets you write <code>v[i]</code>.</li>
+          <li>Remove many elements with erase–remove (one O(n) pass), not with <code>erase</code> in a loop.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <a href="../index.html#prereqs">← Back to the handbook</a>
+  <span>Next: practice the ladder above, then start NeetCode Arrays &amp; Hashing in C++.</span>
+</footer>
+
+<script>
+(function(){
+/* ---------- C++ syntax highlighting ---------- */
+const KW = new Set(("auto bool break case catch char class const constexpr continue default delete do double else enum explicit false float for if inline int long namespace new nullptr operator private protected public return short signed sizeof static struct switch template this throw true try typedef typename unsigned using virtual void while").split(" "));
+const TY = new Set(("vector string pair unordered_map unordered_set map set deque stack queue priority_queue size_t std cout cin endl greater less").split(" "));
+const RE = /(\/\/[^\n]*)|("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])')|(#\s*\w+(?:[ \t]*<[^>\n]*>)?)|(\b\d[\d']*(?:\.\d+)?(?:LL|ll|ULL|u|U)?\b)|([A-Za-z_]\w*)/g;
+const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+document.querySelectorAll("pre > code").forEach(code => {
+  const src = code.textContent;
+  let out = "", last = 0, m;
+  RE.lastIndex = 0;
+  while((m = RE.exec(src))){
+    out += esc(src.slice(last, m.index));
+    const t = m[0];
+    let cls = null;
+    if(m[1]) cls = "com"; else if(m[2]) cls = "str"; else if(m[3]) cls = "pre"; else if(m[4]) cls = "num";
+    else if(KW.has(t)) cls = "kw"; else if(TY.has(t)) cls = "ty";
+    out += cls ? '<span class="tk-'+cls+'">'+esc(t)+'</span>' : esc(t);
+    last = m.index + t.length;
+  }
+  code.innerHTML = out + esc(src.slice(last));
+
+  /* copy button */
+  const pre = code.parentElement;
+  const wrap = document.createElement("div");
+  wrap.className = "code";
+  pre.parentNode.insertBefore(wrap, pre);
+  wrap.appendChild(pre);
+  const btn = document.createElement("button");
+  btn.type = "button"; btn.className = "copy"; btn.textContent = "Copy";
+  btn.addEventListener("click", async () => {
+    try{ await navigator.clipboard.writeText(src); btn.textContent = "Copied"; }
+    catch(e){
+      const r = document.createRange(); r.selectNodeContents(code);
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = "Press Ctrl+C";
+    }
+    setTimeout(() => btn.textContent = "Copy", 1500);
+  });
+  wrap.appendChild(btn);
+});
+
+/* ---------- practice ladder (ticks saved in localStorage) ---------- */
+const PRACTICE = [
+  ["Concatenation of Array","https://leetcode.com/problems/concatenation-of-array/","e","Build a vector of size 2n, or push_back twice"],
+  ["Design Dynamic Array","https://neetcode.io/problems/dynamicArray","e","Implement the class above from memory"],
+  ["Remove Element","https://leetcode.com/problems/remove-element/","e","In-place write pointer"],
+  ["Remove Duplicates from Sorted Array","https://leetcode.com/problems/remove-duplicates-from-sorted-array/","e","Write pointer, compare with the last kept value"],
+  ["Move Zeroes","https://leetcode.com/problems/move-zeroes/","e","Write pointer, then fill the tail with zeros"],
+  ["Merge Sorted Array","https://leetcode.com/problems/merge-sorted-array/","e","Fill from the back so you never overwrite unread values"],
+  ["Contains Duplicate","https://leetcode.com/problems/contains-duplicate/","e","NeetCode 150. Sort, or use an unordered_set"],
+  ["Two Sum","https://leetcode.com/problems/two-sum/","e","NeetCode 150. Return vector<int>{i, j}"],
+  ["Top K Frequent Elements","https://leetcode.com/problems/top-k-frequent-elements/","m","NeetCode 150. Bucket vector<vector<int>>"],
+  ["Product of Array Except Self","https://leetcode.com/problems/product-of-array-except-self/","m","NeetCode 150. Prefix and suffix in the output array"],
+  ["Rotate Array","https://leetcode.com/problems/rotate-array/","m","Three reverses, O(1) extra space"],
+  ["Valid Sudoku","https://leetcode.com/problems/valid-sudoku/","m","NeetCode 150. 2D vectors as 9×9 seen tables"]
+];
+const KEY = "prereq-dynamic-array-cpp";
+let done = {};
+try{ done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; }catch(e){ done = {}; }
+const list = document.getElementById("practice"), prog = document.getElementById("prog");
+const updProg = () => { const n = PRACTICE.filter((_, i) => done[i]).length; prog.textContent = "(" + n + "/" + PRACTICE.length + " done)"; };
+PRACTICE.forEach(([name, url, diff, why], i) => {
+  const li = document.createElement("li");
+  const lab = document.createElement("label");
+  const cb = document.createElement("input");
+  cb.type = "checkbox"; cb.checked = !!done[i]; cb.setAttribute("aria-label", "Mark " + name + " as done");
+  cb.addEventListener("change", () => {
+    if(cb.checked) done[i] = true; else delete done[i];
+    try{ localStorage.setItem(KEY, JSON.stringify(done)); }catch(e){}
+    updProg();
+  });
+  const num = document.createElement("span"); num.className = "num"; num.textContent = String(i + 1).padStart(2, "0");
+  const txt = document.createElement("span");
+  const a = document.createElement("a"); a.className = "pname"; a.href = url; a.target = "_blank"; a.rel = "noopener"; a.textContent = name;
+  const w = document.createElement("span"); w.className = "why"; w.textContent = why;
+  txt.append(a, w);
+  const d = document.createElement("span"); d.className = "diff " + diff; d.textContent = diff === "e" ? "Easy" : "Medium";
+  lab.append(cb, num, txt, d);
+  li.appendChild(lab);
+  list.appendChild(li);
+});
+updProg();
+
+/* ---------- highlight the current section in the table of contents ---------- */
+const links = [...document.querySelectorAll("nav.toc a")];
+const byId = new Map(links.map(a => [a.getAttribute("href").slice(1), a]));
+if("IntersectionObserver" in window){
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if(e.isIntersecting){
+        links.forEach(a => a.classList.remove("on"));
+        const a = byId.get(e.target.id); if(a) a.classList.add("on");
+      }
+    });
+  }, {rootMargin:"0px 0px -70% 0px"});
+  document.querySelectorAll("main section[id]").forEach(s => io.observe(s));
+}
+})();
+</script>
+</body>
+</html>
