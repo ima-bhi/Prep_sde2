@@ -737,7 +737,8 @@ const RES = [
   ["interviewing.io / Exponent","https://interviewing.io/","Mock interviews with engineers, or use Exponent's peer mocks.","Weeks 11–12"]
 ];
 
-const DEFAULT_START = "2026-11-16";
+const DEFAULT_START = "2026-11-23";
+const OLD_DEFAULT_STARTS = ["2026-11-16"]; // saved progress still on an old default moves to the new one
 const LS_KEY = "sde2-handbook-v1";
 let state = blank();
 function blank(){ return {start:DEFAULT_START, done:{}, nc:{}, stories:{}, pre:{}}; }
@@ -745,7 +746,7 @@ function obj(x){ return x && typeof x === "object" && !Array.isArray(x) ? x : {}
 function normalize(d){
   d = obj(d);
   return {
-    start: typeof d.start === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d.start) ? d.start : DEFAULT_START,
+    start: typeof d.start === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d.start) && !OLD_DEFAULT_STARTS.includes(d.start) ? d.start : DEFAULT_START,
     done: Object.assign({}, obj(d.done)),
     nc: Object.assign({}, obj(d.nc)),
     stories: Object.assign({}, obj(d.stories)),
